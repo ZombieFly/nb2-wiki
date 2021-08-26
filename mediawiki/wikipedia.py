@@ -12,7 +12,7 @@ from .exceptions import (
 from .util import cache, stdout_encode, debug
 import re
 
-API_URL = 'http://en.wikipedia.org/w/api.php'
+API_URL = 'https://wiki.biligame.com/mc/api.php'
 RATE_LIMIT = False
 RATE_LIMIT_MIN_WAIT = None
 RATE_LIMIT_LAST_CALL = None
