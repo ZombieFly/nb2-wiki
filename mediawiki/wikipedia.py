@@ -15,6 +15,7 @@ from .util import cache, stdout_encode, debug
 import re
 
 API_URL = 'https://zh.moegirl.org.cn/api.php'
+PROXIES = {}
 RATE_LIMIT = False
 RATE_LIMIT_MIN_WAIT = None
 RATE_LIMIT_LAST_CALL = None
@@ -36,12 +37,22 @@ def set_lang(prefix):
   for cached_func in (search, suggest, summary):
     cached_func.clear_cache()
 
+
 def set_api_url(api_url):
   '''
   更改api地址
   '''
   global API_URL
   API_URL = api_url
+
+
+def set_proxies(proxies):
+  '''
+  设置代理地址
+  '''
+  global PROXIES
+  PROXIES = proxies
+
 
 def set_user_agent(user_agent_string):
   '''
@@ -726,6 +737,7 @@ def _wiki_request(params):
   '''
   global RATE_LIMIT_LAST_CALL
   global USER_AGENT
+  global PROXIES
 
   params['format'] = 'json'
   if not 'action' in params:
@@ -744,7 +756,7 @@ def _wiki_request(params):
     wait_time = (RATE_LIMIT_LAST_CALL + RATE_LIMIT_MIN_WAIT) - datetime.now()
     time.sleep(int(wait_time.total_seconds()))
 
-  r = requests.get(API_URL, params=params, headers=headers)
+  r = requests.get(API_URL, params=params, headers=headers, proxies=PROXIES)
 
   if RATE_LIMIT:
     RATE_LIMIT_LAST_CALL = datetime.now()
