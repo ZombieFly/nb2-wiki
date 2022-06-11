@@ -1,4 +1,6 @@
 from __future__ import unicode_literals
+from glob import glob
+from aiocqhttp import ApiError
 
 import requests
 import time
@@ -12,7 +14,7 @@ from .exceptions import (
 from .util import cache, stdout_encode, debug
 import re
 
-API_URL = 'https://wiki.biligame.com/mc/api.php'
+API_URL = 'https://zh.moegirl.org.cn/api.php'
 RATE_LIMIT = False
 RATE_LIMIT_MIN_WAIT = None
 RATE_LIMIT_LAST_CALL = None
@@ -34,6 +36,12 @@ def set_lang(prefix):
   for cached_func in (search, suggest, summary):
     cached_func.clear_cache()
 
+def set_api_url(api_url):
+  '''
+  更改api地址
+  '''
+  global API_URL
+  API_URL = api_url
 
 def set_user_agent(user_agent_string):
   '''
