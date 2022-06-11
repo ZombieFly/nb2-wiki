@@ -243,8 +243,9 @@ def summary(title, sentences=0, chars=0, auto_suggest=True, redirect=True):
   query_params = {
     'prop': 'extracts',
     'explaintext': '',
-    'titles': title
-  }
+    'titles': title,
+
+    }
 
   if sentences:
     query_params['exsentences'] = sentences
@@ -254,7 +255,7 @@ def summary(title, sentences=0, chars=0, auto_suggest=True, redirect=True):
     query_params['exintro'] = ''
 
   request = _wiki_request(query_params)
-  summary = request['query']['pages'][pageid]['extract']
+  summary = request['query']['pages'][pageid]['extract'] + ('' if chars == 0 else f'\n[字数大于{chars}字部分被省略]')
 
   return summary
 
