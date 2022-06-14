@@ -1,8 +1,6 @@
 from __future__ import unicode_literals
-from glob import glob
-from aiocqhttp import ApiError
 
-import requests
+import httpx
 import time
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
@@ -756,7 +754,7 @@ def _wiki_request(params):
     wait_time = (RATE_LIMIT_LAST_CALL + RATE_LIMIT_MIN_WAIT) - datetime.now()
     time.sleep(int(wait_time.total_seconds()))
 
-  r = requests.get(API_URL, params=params, headers=headers, proxies=PROXIES)
+  r = httpx.get(API_URL, params=params, headers=headers, proxies=PROXIES)
 
   if RATE_LIMIT:
     RATE_LIMIT_LAST_CALL = datetime.now()
