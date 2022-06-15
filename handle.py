@@ -28,7 +28,7 @@ class Handle:
         通过标题编码为url形式
         '''
         txt = (self.raw if not txt else txt)
-        return f'{wiki.WIKI_URL}/{quote(txt)}'
+        return f'{url_head}/{quote(txt)}'
 
     def chars_limit(self, txt='', limit=0):
         '''

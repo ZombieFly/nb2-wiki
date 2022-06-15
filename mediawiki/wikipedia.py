@@ -9,7 +9,7 @@ from decimal import Decimal
 from .exceptions import (
   PageError, DisambiguationError, RedirectError, HTTPTimeoutError,
   WikipediaException, ODD_ERROR_MESSAGE)
-from .util import cache, stdout_encode, debug
+from .util import cache, stdout_encode
 import re
 
 API_URL = 'https://zh.moegirl.org.cn/api.php'
