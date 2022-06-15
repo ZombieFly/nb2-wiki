@@ -1,4 +1,7 @@
 import re
+from urllib.parse import quote
+
+import mediawiki as wiki
 
 class Handle:
     '''
@@ -19,3 +22,17 @@ class Handle:
         '''
         ret = self.raw.options
         return ret if (max >= len(ret) or not max) else ret[:max]
+
+    def title_to_url(self, txt='', url_head=wiki.API_URL):
+        '''
+        通过标题编码为url形式
+        '''
+        txt = (self.raw if not txt else txt)
+        return f'{wiki.WIKI_URL}/{quote(txt)}'
+
+    def chars_limit(self, txt='', limit=0):
+        '''
+        控制输入文本最大字数,并在末尾追加省略信息
+        '''
+        txt = (self.raw if not txt else txt)
+        return  (txt if len(txt) <= limit or not limit else txt[:limit] + f'……\n[字数大于{limit}字部分被省略]')

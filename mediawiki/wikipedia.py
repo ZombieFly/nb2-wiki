@@ -13,6 +13,7 @@ from .util import cache, stdout_encode, debug
 import re
 
 API_URL = 'https://zh.moegirl.org.cn/api.php'
+WIKI_URL = 'https://minecraft.fandom.com/zh/wiki'
 PROXIES = {}
 RATE_LIMIT = False
 RATE_LIMIT_MIN_WAIT = None
@@ -42,6 +43,11 @@ def set_api_url(api_url):
   '''
   global API_URL
   API_URL = api_url
+
+
+def set_wiki_url(url):
+  global WIKI_URL
+  WIKI_URL =url
 
 
 def set_proxies(proxies):
@@ -229,12 +235,9 @@ def random(pages=1):
 
 
 @cache
-def summary(title, sentences=0, chars=0, auto_suggest=True, redirect=True):
+def summary(title, sentences=0, chars=0, auto_suggest=True, redirect=True) -> list:
   '''
-  Plain text summary of the page.
-
-  .. note:: This is a convenience wrapper - auto_suggest and redirect are enabled by default
-
+  Plain text summary of the page.  .
   Keyword arguments:
 
   * sentences - if set, return the first `sentences` sentences (can be no greater than 10).
@@ -264,9 +267,11 @@ def summary(title, sentences=0, chars=0, auto_suggest=True, redirect=True):
     query_params['exintro'] = ''
 
   request = _wiki_request(query_params)
-  summary = request['query']['pages'][pageid]['extract'] + ('' if chars == 0 else f'\n[字数大于{chars}字部分被省略]')
+  summary = request['query']['pages'][pageid]['extract']
+#  url = request['query']['pages'][pageid]['fullurl']
 
-  return summary
+# return [url, summary]
+  return summary.strip()
 
 
 def page(title=None, pageid=None, auto_suggest=True, redirect=True, preload=False):
