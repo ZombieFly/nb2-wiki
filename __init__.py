@@ -21,6 +21,8 @@ head = '搜索结果出来了喵:'
 
 cmd = on_command('wiki ')
 
+# TODO
+# ! 目前重定向可能会出现完全不相干的结果返回，同时，因为发送的链接是直接把title转码得到的，所以有时候也没法访问到被重新向的链接
 def output(title, auto_suggest= True, redirect= True):
     result = [title, Handle(title).title_to_url(), Handle(wiki.summary(title, auto_suggest= auto_suggest, redirect= redirect)).chars_limit(limit=200)]
     return (f'{head}\n'
