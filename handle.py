@@ -1,7 +1,7 @@
 import re
 from urllib.parse import quote
 
-import mediawiki as wiki
+from . import mediawiki as wiki
 
 class Handle:
     '''
@@ -23,7 +23,7 @@ class Handle:
         ret = self.raw.options
         return ret if (max >= len(ret) or not max) else ret[:max]
 
-    def title_to_url(self, txt='', url_head=wiki.API_URL):
+    def title_to_url(self, txt='', url_head=wiki.WIKI_URL):
         '''
         通过标题编码为url形式
         '''
