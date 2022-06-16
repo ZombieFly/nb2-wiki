@@ -411,7 +411,7 @@ class WikipediaPage(object):
 
       lis = BeautifulSoup(html, 'html.parser').find_all('li')
       filtered_lis = [li for li in lis if not 'tocsection' in ''.join(li.get('class', []))]
-      may_refer_to = [li.a.get_text() for li in filtered_lis if li.a]
+      may_refer_to = [li.a.get('title') for li in filtered_lis if li.a]
 
       raise DisambiguationError(getattr(self, 'title', page['title']), may_refer_to)
 
