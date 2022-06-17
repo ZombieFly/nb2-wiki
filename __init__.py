@@ -6,6 +6,8 @@ from nonebot.adapters.onebot.v11 import GroupMessageEvent
 from .config import Config
 
 from . import mediawiki as wiki
+from .mediawiki import CURID_URL
+
 from .handle import Handle
 
 global_config = get_driver().config
@@ -14,19 +16,20 @@ config = Config.parse_obj(global_config)
 wiki.set_proxies({'http://':'http://127.0.0.1:10809','https://':'http://127.0.0.1:10809'})
 wiki.set_api_url('https://minecraft.fandom.com/zh/api.php')
 wiki.set_user_agent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36')
-wiki.set_wiki_url('https://minecraft.fandom.com/zh/wiki')
+wiki.set_curid_url('https://minecraft.fandom.com/zh/index.php?curid=')
 
 refer_max = 10
 head = '搜索结果出来了喵:'
 
-cmd = on_command('wiki ')
+cmd = on_command('wiki ',aliases={'维基 '})
 
 # TODO
 # ! 目前重定向可能会出现完全不相干的结果返回，同时，因为发送的链接是直接把title转码得到的，所以有时候也没法访问到被重新向的链接
 def output(title, auto_suggest= True, redirect= True):
-    result = [title, Handle(title).title_to_url(), Handle(wiki.summary(title, auto_suggest= auto_suggest, redirect= redirect)).chars_max(max=200)]
+    summ = wiki.summary(title, auto_suggest= auto_suggest, redirect= redirect)
+    result = [title, summ[0], Handle(summ[1]).chars_max(max=200)]
     return (f'{head}\n'
-            +f'{result[1]}\n'
+            +f'{CURID_URL}{result[1]}\n'
             +f'{result[2]}')
 
 @cmd.handle()
