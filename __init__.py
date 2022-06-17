@@ -24,7 +24,7 @@ cmd = on_command('wiki ')
 # TODO
 # ! 目前重定向可能会出现完全不相干的结果返回，同时，因为发送的链接是直接把title转码得到的，所以有时候也没法访问到被重新向的链接
 def output(title, auto_suggest= True, redirect= True):
-    result = [title, Handle(title).title_to_url(), Handle(wiki.summary(title, auto_suggest= auto_suggest, redirect= redirect)).chars_limit(limit=200)]
+    result = [title, Handle(title).title_to_url(), Handle(wiki.summary(title, auto_suggest= auto_suggest, redirect= redirect)).chars_max(max=200)]
     return (f'{head}\n'
             +f'{result[1]}\n'
             +f'{result[2]}')
@@ -34,6 +34,7 @@ async def _(event: GroupMessageEvent, state: T_State, keywd= CommandArg()):
     #await cmd.send(str(state))
     numb:str = event.message.extract_plain_text()
     if numb and not keywd:
+        # * 用户发送了对应条目的标号后的处理
         try:
             numb = int(numb)
             await cmd.finish(output(state['results'][numb], False, False))
@@ -45,7 +46,7 @@ async def _(event: GroupMessageEvent, state: T_State, keywd= CommandArg()):
             await cmd.finish(f'{numb}超出了索引')
 
     else:
-        #会话开启的第一次处理
+        # * 会话开启的第一次处理
         #await cmd.send(f'keywd={keywd.extract_plain_text()}, type(keywd)={type(keywd.extract_plain_text())}')
         try:
             #有直接对应的页面
@@ -55,9 +56,10 @@ async def _(event: GroupMessageEvent, state: T_State, keywd= CommandArg()):
             state['results'] = Handle(msg).refer_to_list(max=refer_max)
             await cmd.reject('有关结果如下，输入对应标号发起搜索，回复其他字符自动取消:\n' + 
                             '\n'.join(f'[{n}]{state["results"][n]}'
-                            for n in range(len(state['results']))) +
-                            f'\n(仅展示前{refer_max}个结果)'
+                            for n in range(len(state["results"]))) +
+                            (f'\n(仅展示前{refer_max}个结果)' if len(state["results"]) > refer_max else '')
                             )
         except wiki.exceptions.PageError:
+            # * 没有任何相关条目
             await cmd.finish('没有找到任何相关结果')
         
