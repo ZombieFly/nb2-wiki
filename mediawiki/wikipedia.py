@@ -13,7 +13,7 @@ from .util import cache, stdout_encode
 import re
 
 API_URL = 'https://zh.moegirl.org.cn/api.php'
-WIKI_URL = 'https://minecraft.fandom.com/zh/wiki'
+CURID_URL = 'https://minecraft.fandom.com/zh/index.php?curid='
 PROXIES = {}
 RATE_LIMIT = False
 RATE_LIMIT_MIN_WAIT = None
@@ -45,9 +45,9 @@ def set_api_url(api_url):
   API_URL = api_url
 
 
-def set_wiki_url(url):
-  global WIKI_URL
-  WIKI_URL =url
+def set_curid_url(url):
+  global CURID_URL
+  CURID_URL =url
 
 
 def set_proxies(proxies):
@@ -271,7 +271,7 @@ def summary(title, sentences=0, chars=0, auto_suggest=True, redirect=True) -> li
 #  url = request['query']['pages'][pageid]['fullurl']
 
 # return [url, summary]
-  return summary.strip()
+  return [pageid, summary.strip()]
 
 
 def page(title=None, pageid=None, auto_suggest=True, redirect=True, preload=False):

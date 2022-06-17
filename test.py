@@ -5,7 +5,8 @@ from handle import Handle
 #print(wiki.summary('Java版1.7.2/开发版本', chars=200))
 kword = "1.17"
 try:
-    result = [kword, Handle(kword).title_to_url(), Handle(wiki.summary(kword)).chars_limit(limit=200)]
+    resu = wiki.summary(kword).chars_limit(limit=200)
+    result = [kword, Handle(kword).title_to_url(), Handle(resu)]
     print(result)
 except wiki.exceptions.DisambiguationError as msg:
     print(Handle(msg).refer_to_list())

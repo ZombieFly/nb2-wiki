@@ -23,13 +23,6 @@ class Handle:
         ret = self.raw.options
         return ret if (max >= len(ret) or not max) else ret[:max]
 
-    def title_to_url(self, txt='', url_head=wiki.WIKI_URL):
-        '''
-        通过标题编码为url形式
-        '''
-        txt = (self.raw if not txt else txt)
-        return f'{url_head}/{quote(txt)}'
-
     def chars_max(self, txt='', max=0) -> str:
         '''
         控制输入文本最大字数,并在末尾追加省略信息
