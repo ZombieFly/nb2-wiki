@@ -7,7 +7,7 @@ class Handle:
     '''
     用以处理简介、搜索结果输出
     '''
-    def __init__(self, raw) -> None:
+    def __init__(self, raw: str) -> None:
         self.raw:str = raw
 
     def nn_to_n(self) -> str:
@@ -16,7 +16,7 @@ class Handle:
         '''
         return re.sub(r"\n\n", r"\n", self.raw)
 
-    def refer_to_list(self, max:int=0):
+    def refer_to_list(self, max:int=0) -> list:
         '''
         将建议列表以列表形式输出,参数max控制返回列表最大长度
         '''
@@ -30,9 +30,9 @@ class Handle:
         txt = (self.raw if not txt else txt)
         return f'{url_head}/{quote(txt)}'
 
-    def chars_limit(self, txt='', limit=0):
+    def chars_max(self, txt='', max=0) -> str:
         '''
         控制输入文本最大字数,并在末尾追加省略信息
         '''
         txt = (self.raw if not txt else txt)
-        return  (txt if len(txt) <= limit or not limit else txt[:limit] + f'……\n[字数大于{limit}字部分被省略]')
+        return  (txt if len(txt) <= max or not max else txt[:max] + f'……\n[字数大于{max}字部分被省略]')
