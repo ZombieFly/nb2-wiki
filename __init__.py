@@ -1,7 +1,9 @@
-from nonebot import get_driver, on_command
+from email import message
+from nonebot import get_driver, on_command, get_bot
 from nonebot.params import CommandArg
 from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
+from nonebot.exception import RejectedException, FinishedException
 
 from .config import Config
 
@@ -41,18 +43,20 @@ async def _(event: GroupMessageEvent, state: T_State, keywd= CommandArg()):
     numb:str = event.message.extract_plain_text()
     msg_id = event.message_id
     if numb and not keywd:
-        print(state['refer_id'], type(state['refer_id']))
+        #print(state['refer_id'], type(state['refer_id']))
         # * 用户发送了对应条目的标号后的处理
         try:
             numb = int(numb)
-            await cmd.finish(output(state['results'][numb], False, False, msg_id= msg_id, is_reply= True))
+            await cmd.send(output(state['results'][numb], False, False, msg_id= msg_id, is_reply= True))
         except ValueError:
             #输入的非数字时的处理
-            await cmd.finish('取消搜索')
+            await cmd.send('取消搜索')
         except IndexError:
             #给的数大了
-            await cmd.finish(f'{numb}超出了索引')
-        # TODO 实现在三种情况下发送消息后撤回搜索结果列表
+            await cmd.send(f'{numb}超出了索引')
+        # * 撤回搜索结果列表消息
+        await get_bot(Config.Config.bot_id).delete_msg(message_id=state['refer_msg_id']['message_id'])
+        raise FinishedException
 
     else:
         # * 会话开启的第一次处理
@@ -63,11 +67,12 @@ async def _(event: GroupMessageEvent, state: T_State, keywd= CommandArg()):
         except wiki.exceptions.DisambiguationError as msg:
             #没有对应页面，但可生成相似结果列表
             state['results'] = Handle(msg).refer_to_list(max=refer_max)
-            state['refer_id'] = await cmd.reject('有关结果如下，输入对应标号发起搜索，回复其他字符自动取消:\n' + 
+            state['refer_msg_id'] = await cmd.send('有关结果如下，输入对应标号发起搜索，回复其他字符自动取消:\n' + 
                             '\n'.join(f'[{n}]{state["results"][n]}'
                             for n in range(len(state["results"]))) +
                             (f'\n(仅展示前{refer_max}个结果)' if len(state["results"]) > refer_max else '')
                             )
+            raise RejectedException
         except wiki.exceptions.PageError:
             # * 没有任何相关条目
             await cmd.finish(output('没有找到任何相关结果', msg_id= msg_id, is_reply= True))
