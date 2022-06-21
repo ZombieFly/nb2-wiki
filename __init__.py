@@ -1,4 +1,3 @@
-from email import message
 from nonebot import get_driver, on_command, get_bot
 from nonebot.params import CommandArg
 from nonebot.typing import T_State
