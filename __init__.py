@@ -1,4 +1,5 @@
-from nonebot import get_driver, on_command, get_bot
+from nonebot import get_bot, get_driver, on_command
+from nonebot.adapters import Bot
 from nonebot.params import CommandArg
 from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageSegment
@@ -37,14 +38,14 @@ async def output(title, auto_suggest= True, redirect= True, is_reply= False, msg
 
 
 @cmd.handle()
-async def _(event: GroupMessageEvent, state: T_State, keywd= CommandArg()):
+async def _(bot: Bot, event: GroupMessageEvent, state: T_State, keywd= CommandArg()):
     #await cmd.send(str(state))
     numb:str = event.message.extract_plain_text()
     msg_id = event.message_id
     if numb and not keywd:
         #print(state['refer_id'], type(state['refer_id']))
         # * 用户发送了对应条目的标号后的处理
-        await get_bot(Config.Config.bot_id).delete_msg(message_id=state['refer_msg_id']['message_id'])
+        await get_bot(bot.self_id).delete_msg(message_id=state['refer_msg_id']['message_id'])
         try:
             numb = int(numb)
             await cmd.send(await output(state['results'][numb], False, False, msg_id= msg_id, is_reply= True))
