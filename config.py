@@ -6,3 +6,4 @@ class Config(BaseSettings):
 
     class Config:
         extra = "ignore"
+        bot_id = ""
