@@ -44,6 +44,7 @@ async def _(event: GroupMessageEvent, state: T_State, keywd= CommandArg()):
     if numb and not keywd:
         #print(state['refer_id'], type(state['refer_id']))
         # * 用户发送了对应条目的标号后的处理
+        await get_bot(Config.Config.bot_id).delete_msg(message_id=state['refer_msg_id']['message_id'])
         try:
             numb = int(numb)
             await cmd.send(await output(state['results'][numb], False, False, msg_id= msg_id, is_reply= True))
@@ -54,7 +55,6 @@ async def _(event: GroupMessageEvent, state: T_State, keywd= CommandArg()):
             #给的数大了
             await cmd.send(f'{numb}超出了索引')
         # * 撤回搜索结果列表消息
-        await get_bot(Config.Config.bot_id).delete_msg(message_id=state['refer_msg_id']['message_id'])
         raise FinishedException
 
     else:
