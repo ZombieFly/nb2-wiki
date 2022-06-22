@@ -103,7 +103,7 @@ def set_rate_limiting(rate_limit, min_wait=timedelta(milliseconds=50)):
 
 
 @cache
-def search(query, results=10, suggestion=False):
+async def search(query, results=10, suggestion=False):
   '''
   Do a Wikipedia search for `query`.
 
@@ -123,7 +123,7 @@ def search(query, results=10, suggestion=False):
   if suggestion:
     search_params['srinfo'] = 'suggestion'
 
-  raw_results = _wiki_request(search_params)
+  raw_results = await _wiki_request(search_params)
 
   if 'error' in raw_results:
     if raw_results['error']['info'] in ('HTTP request timed out.', 'Pool queue is full'):
@@ -143,7 +143,7 @@ def search(query, results=10, suggestion=False):
 
 
 @cache
-def geosearch(latitude, longitude, title=None, results=10, radius=1000):
+async def geosearch(latitude, longitude, title=None, results=10, radius=1000):
   '''
   Do a wikipedia geo search for `latitude` and `longitude`
   using HTTP API described in http://www.mediawiki.org/wiki/Extension:GeoData
@@ -169,7 +169,7 @@ def geosearch(latitude, longitude, title=None, results=10, radius=1000):
   if title:
     search_params['titles'] = title
 
-  raw_results = _wiki_request(search_params)
+  raw_results = await _wiki_request(search_params)
 
   if 'error' in raw_results:
     if raw_results['error']['info'] in ('HTTP request timed out.', 'Pool queue is full'):
@@ -187,7 +187,7 @@ def geosearch(latitude, longitude, title=None, results=10, radius=1000):
 
 
 @cache
-def suggest(query):
+async def suggest(query):
   '''
   Get a Wikipedia search suggestion for `query`.
   Returns a string or None if no suggestion was found.
@@ -200,7 +200,7 @@ def suggest(query):
   }
   search_params['srsearch'] = query
 
-  raw_result = _wiki_request(search_params)
+  raw_result = await _wiki_request(search_params)
 
   if raw_result['query'].get('searchinfo'):
     return raw_result['query']['searchinfo']['suggestion']
@@ -208,7 +208,7 @@ def suggest(query):
   return None
 
 
-def random(pages=1):
+async def random(pages=1):
   '''
   Get a list of random Wikipedia article titles.
 
@@ -225,7 +225,7 @@ def random(pages=1):
     'rnlimit': pages,
   }
 
-  request = _wiki_request(query_params)
+  request = await _wiki_request(query_params)
   titles = [page['title'] for page in request['query']['random']]
 
   if len(titles) == 1:
@@ -235,7 +235,7 @@ def random(pages=1):
 
 
 @cache
-def summary(title, sentences=0, chars=0, auto_suggest=True, redirect=True) -> list:
+async def summary(title, sentences=0, chars=0, auto_suggest=True, redirect=True) -> list:
   '''
   Plain text summary of the page.  .
   Keyword arguments:
@@ -248,7 +248,8 @@ def summary(title, sentences=0, chars=0, auto_suggest=True, redirect=True) -> li
 
   # use auto_suggest and redirect to get the correct article
   # also, use page's error checking to raise DisambiguationError if necessary
-  page_info = page(title, auto_suggest=auto_suggest, redirect=redirect)
+  # ! 此处返回了错误的NoneType类型，而不是预期的Wikipedia类型
+  page_info = await page(title, auto_suggest=auto_suggest, redirect=redirect)
   title = page_info.title
   pageid = page_info.pageid
 
@@ -265,8 +266,7 @@ def summary(title, sentences=0, chars=0, auto_suggest=True, redirect=True) -> li
     query_params['exchars'] = chars
   else:
     query_params['exintro'] = ''
-
-  request = _wiki_request(query_params)
+  request = await _wiki_request(query_params)
   summary = request['query']['pages'][pageid]['extract']
 #  url = request['query']['pages'][pageid]['fullurl']
 
@@ -274,7 +274,7 @@ def summary(title, sentences=0, chars=0, auto_suggest=True, redirect=True) -> li
   return [pageid, summary.strip()]
 
 
-def page(title=None, pageid=None, auto_suggest=True, redirect=True, preload=False):
+async def page(title=None, pageid=None, auto_suggest=True, redirect=True, preload=False):
   '''
   Get a WikipediaPage object for the page with title `title` or the pageid
   `pageid` (mutually exclusive).
@@ -290,19 +290,17 @@ def page(title=None, pageid=None, auto_suggest=True, redirect=True, preload=Fals
 
   if title is not None:
     if auto_suggest:
-      results, suggestion = search(title, results=1, suggestion=True)
+      results, suggestion = await search(title, results=1, suggestion=True)
       try:
         title = suggestion or results[0]
       except IndexError:
         # if there is no suggestion or search results, the page doesn't exist
         raise PageError(title)
-    return WikipediaPage(title, redirect=redirect, preload=preload)
+    return await WikipediaPage(title, redirect=redirect, preload=preload)._int()
   elif pageid is not None:
-    return WikipediaPage(pageid=pageid, preload=preload)
+    return await WikipediaPage(pageid=pageid, preload=preload)._int()
   else:
     raise ValueError("Either a title or a pageid must be specified")
-
-
 
 class WikipediaPage(object):
   '''
@@ -311,6 +309,8 @@ class WikipediaPage(object):
   '''
 
   def __init__(self, title=None, pageid=None, redirect=True, preload=False, original_title=''):
+    self.__preload = preload
+    self.__redirect = redirect
     if title is not None:
       self.title = title
       self.original_title = original_title or title
@@ -319,11 +319,14 @@ class WikipediaPage(object):
     else:
       raise ValueError("Either a title or a pageid must be specified")
 
-    self.__load(redirect=redirect, preload=preload)
+  async def _int(self):
+    #后续初始化，解决没法异步load的问题
+    await self.__load(redirect=self.__redirect, preload=self.__preload)
 
-    if preload:
+    if self.__preload:
       for prop in ('content', 'summary', 'images', 'references', 'links', 'sections'):
         getattr(self, prop)
+      return self
 
   def __repr__(self):
     return stdout_encode(u'<WikipediaPage \'{}\'>'.format(self.title))
@@ -338,7 +341,7 @@ class WikipediaPage(object):
     except:
       return False
 
-  def __load(self, redirect=True, preload=False):
+  async def __load(self, redirect=True, preload=False):
     '''
     Load basic information from Wikipedia.
     Confirm that page exists and is not a disambiguation/redirect.
@@ -356,7 +359,7 @@ class WikipediaPage(object):
     else:
       query_params['pageids'] = self.pageid
 
-    request = _wiki_request(query_params)
+    request = await _wiki_request(query_params)
 
     query = request['query']
     pageid = list(query['pages'].keys())[0]
@@ -406,7 +409,7 @@ class WikipediaPage(object):
         query_params['pageids'] = self.pageid
       else:
         query_params['titles'] = self.title
-      request = _wiki_request(query_params)
+      request = await _wiki_request(query_params)
       html = request['query']['pages'][pageid]['revisions'][0]['*']
 
       lis = BeautifulSoup(html, 'html.parser').find_all('li')
@@ -420,7 +423,7 @@ class WikipediaPage(object):
       self.title = page['title']
       self.url = page['fullurl']
 
-  def __continued_query(self, query_params):
+  async def __continued_query(self, query_params):
     '''
     Based on https://www.mediawiki.org/wiki/API:Query#Continuing_queries
     '''
@@ -433,7 +436,7 @@ class WikipediaPage(object):
       params = query_params.copy()
       params.update(last_continue)
 
-      request = _wiki_request(params)
+      request = await _wiki_request(params)
 
       if 'query' not in request:
         break
@@ -458,7 +461,7 @@ class WikipediaPage(object):
     else:
       return {'pageids': self.pageid}
 
-  def html(self):
+  async def html(self):
     '''
     Get full page HTML.
 
@@ -474,13 +477,13 @@ class WikipediaPage(object):
         'titles': self.title
       }
 
-      request = _wiki_request(query_params)
+      request = await _wiki_request(query_params)
       self._html = request['query']['pages'][self.pageid]['revisions'][0]['*']
 
     return self._html
 
   @property
-  def content(self):
+  async def content(self):
     '''
     Plain text content of the page, excluding images, tables, and other data.
     '''
@@ -495,7 +498,7 @@ class WikipediaPage(object):
          query_params['titles'] = self.title
       else:
          query_params['pageids'] = self.pageid
-      request = _wiki_request(query_params)
+      request = await _wiki_request(query_params)
       self._content     = request['query']['pages'][self.pageid]['extract']
       self._revision_id = request['query']['pages'][self.pageid]['revisions'][0]['revid']
       self._parent_id   = request['query']['pages'][self.pageid]['revisions'][0]['parentid']
@@ -534,7 +537,7 @@ class WikipediaPage(object):
     return self._parent_id
 
   @property
-  def summary(self):
+  async def summary(self):
     '''
     Plain text summary of the page.
     '''
@@ -550,7 +553,7 @@ class WikipediaPage(object):
       else:
          query_params['pageids'] = self.pageid
 
-      request = _wiki_request(query_params)
+      request = await _wiki_request(query_params)
       self._summary = request['query']['pages'][self.pageid]['extract']
 
     return self._summary
@@ -576,7 +579,7 @@ class WikipediaPage(object):
     return self._images
 
   @property
-  def coordinates(self):
+  async def coordinates(self):
     '''
     Tuple of Decimals in the form of (lat, lon) or None
     '''
@@ -587,7 +590,7 @@ class WikipediaPage(object):
         'titles': self.title,
       }
 
-      request = _wiki_request(query_params)
+      request = await _wiki_request(query_params)
 
       if 'query' in request:
         coordinates = request['query']['pages'][self.pageid]['coordinates']
@@ -656,7 +659,7 @@ class WikipediaPage(object):
     return self._categories
 
   @property
-  def sections(self):
+  async def sections(self):
     '''
     List of section titles from the table of contents on the page.
     '''
@@ -669,7 +672,7 @@ class WikipediaPage(object):
       if not getattr(self, 'title', None) is None:
           query_params["page"] = self.title
 
-      request = _wiki_request(query_params)
+      request = await _wiki_request(query_params)
       self._sections = [section['line'] for section in request['parse']['sections']]
 
     return self._sections
@@ -701,7 +704,7 @@ class WikipediaPage(object):
 
 
 @cache
-def languages():
+async def languages():
   '''
   List all the currently supported language prefixes (usually ISO language code).
 
@@ -711,7 +714,7 @@ def languages():
   Returns: dict of <prefix>: <local_lang_name> pairs. To get just a list of prefixes,
   use `wikipedia.languages().keys()`.
   '''
-  response = _wiki_request({
+  response = await _wiki_request({
     'meta': 'siteinfo',
     'siprop': 'languages'
   })
@@ -733,7 +736,7 @@ def donate():
   webbrowser.open('https://donate.wikimedia.org/w/index.php?title=Special:FundraiserLandingPage', new=2)
 
 
-def _wiki_request(params):
+async def _wiki_request(params):
   '''
   Make a request to the Wikipedia API using the given search parameters.
   Returns a parsed dict of the JSON response.
@@ -758,8 +761,8 @@ def _wiki_request(params):
 
     wait_time = (RATE_LIMIT_LAST_CALL + RATE_LIMIT_MIN_WAIT) - datetime.now()
     time.sleep(int(wait_time.total_seconds()))
-
-  r = httpx.get(API_URL, params=params, headers=headers, proxies=PROXIES)
+  async with httpx.AsyncClient(proxies=PROXIES) as client:
+    r = await client.get(API_URL, params=params, headers=headers)
 
   if RATE_LIMIT:
     RATE_LIMIT_LAST_CALL = datetime.now()
