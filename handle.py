@@ -1,7 +1,4 @@
 import re
-from urllib.parse import quote
-
-from . import mediawiki as wiki
 
 class Handle:
     '''
