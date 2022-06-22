@@ -24,16 +24,46 @@ refer_max = 10
 
 cmd = on_command('wiki ',aliases={'维基 '})
 
-def reply_out(msg_id, output):
+def reply_out(msg_id:int, output:str) -> str:
+    """给消息包装上“回复“
+
+    Args:
+        msg_id (int): 所要回复的消息id
+        output (str): 所要包装的消息原文
+
+    Returns:
+        str
+    """
     return MessageSegment.reply(id_=msg_id) + MessageSegment.text(output)
 
 # TODO
 # ! 目前重定向可能会出现完全不相干的结果返回
-async def output(title, auto_suggest= True, redirect= True, is_reply= False, msg_id= None):
+async def output(
+    title: str,
+    auto_suggest= True,
+    redirect= True,
+    is_reply= False,
+    has_title= False,
+    msg_id:int= None,
+) -> str:
+    """将输入的标题转化为格式化的消息
+
+    Args:
+        title (str): 页面标题
+        auto_suggest (bool, optional): 是否启用自动建议 Defaults to True.
+        redirect (bool, optional): 是否接受自动重定向 Defaults to True.
+        is_reply (bool, optional): 所发送的消息是否“回复” Defaults to False.
+        has_title (bool, optional): 消息内是否再次注明标题 Defaults to False.
+        msg_id (int, optional): 所“回复”的消息id Defaults to None.
+
+    Returns:
+        str
+    """
     summ = await wiki.summary(title, auto_suggest= auto_suggest, redirect= redirect)
     result = [title, summ[0], Handle(summ[1]).chars_max(max=200)]
-    out = (f'{CURID_URL}{result[1]}\n'
-            +f'{result[2]}')
+    out = (f'「{title}」' if has_title else ''
+        +f'\n{CURID_URL}{result[1]}\n'
+        +f'{result[2]}')
     return out if is_reply and not msg_id else reply_out(msg_id, out)
 
 
@@ -45,10 +75,10 @@ async def _(bot: Bot, event: GroupMessageEvent, state: T_State, keywd= CommandAr
     if numb and not keywd:
         #print(state['refer_id'], type(state['refer_id']))
         # * 用户发送了对应条目的标号后的处理
-        await get_bot(bot.self_id).delete_msg(message_id=state['refer_msg_id']['message_id'])
+        await bot.delete_msg(message_id=state['refer_msg_id']['message_id'])
         try:
             numb = int(numb)
-            await cmd.send(await output(state['results'][numb], False, False, msg_id= msg_id, is_reply= True))
+            await cmd.send(await output(title=state['results'][numb], msg_id=msg_id, is_reply=True, has_title=True))
         except ValueError:
             #输入的非数字时的处理
             await cmd.send('取消搜索')
@@ -63,7 +93,7 @@ async def _(bot: Bot, event: GroupMessageEvent, state: T_State, keywd= CommandAr
         #await cmd.send(f'keywd={keywd.extract_plain_text()}, type(keywd)={type(keywd.extract_plain_text())}')
         try:
             # * 有直接对应的页面
-            await cmd.finish(await output(keywd.extract_plain_text(), redirect= True, msg_id= msg_id, is_reply= True))
+            await cmd.finish(await output(keywd.extract_plain_text(), redirect=True, msg_id=msg_id, is_reply=True))
         except wiki.exceptions.DisambiguationError as msg:
             # * 没有对应页面，但可生成相似结果列表
             state['results'] = Handle(msg).refer_to_list(max=refer_max)
@@ -75,5 +105,5 @@ async def _(bot: Bot, event: GroupMessageEvent, state: T_State, keywd= CommandAr
             raise RejectedException
         except wiki.exceptions.PageError:
             # * 没有任何相关条目
-            await cmd.finish(reply_out(output='没有找到任何相关结果', msg_id= msg_id))
+            await cmd.finish(reply_out(output='没有找到任何相关结果', msg_id=msg_id))
         
