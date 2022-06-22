@@ -326,7 +326,7 @@ class WikipediaPage(object):
     if self.__preload:
       for prop in ('content', 'summary', 'images', 'references', 'links', 'sections'):
         getattr(self, prop)
-      return self
+    return self
 
   def __repr__(self):
     return stdout_encode(u'<WikipediaPage \'{}\'>'.format(self.title))
