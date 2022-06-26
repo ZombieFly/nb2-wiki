@@ -61,9 +61,11 @@ async def output(
     """
     summ = await wiki.summary(title, auto_suggest= auto_suggest, redirect= redirect)
     result = [title, summ[0], Handle(summ[1]).chars_max(max=200)]
-    out = (f'「{title}」' if has_title else ''
-        +f'\n{CURID_URL}{result[1]}\n'
-        +f'{result[2]}')
+    out = (
+        (f'「{title}」\n' if has_title else '')
+        +f'{CURID_URL}{result[1]}\n'
+        +f'{result[2]}'
+    )
     return out if is_reply and not msg_id else reply_out(msg_id, out)
 
 
@@ -75,6 +77,7 @@ async def _(bot: Bot, event: GroupMessageEvent, state: T_State, keywd= CommandAr
     if numb and not keywd:
         #print(state['refer_id'], type(state['refer_id']))
         # * 用户发送了对应条目的标号后的处理
+        # * 撤回搜索结果列表消息
         await bot.delete_msg(message_id=state['refer_msg_id']['message_id'])
         try:
             numb = int(numb)
@@ -85,7 +88,6 @@ async def _(bot: Bot, event: GroupMessageEvent, state: T_State, keywd= CommandAr
         except IndexError:
             #给的数大了
             await cmd.send(f'{numb}超出了索引')
-        # * 撤回搜索结果列表消息
         raise FinishedException
 
     else:
@@ -97,11 +99,15 @@ async def _(bot: Bot, event: GroupMessageEvent, state: T_State, keywd= CommandAr
         except wiki.exceptions.DisambiguationError as msg:
             # * 没有对应页面，但可生成相似结果列表
             state['results'] = Handle(msg).refer_to_list(max=refer_max)
-            state['refer_msg_id'] = await cmd.send('有关结果如下，输入对应标号发起搜索，回复其他字符自动取消:\n' + 
-                            '\n'.join(f'[{n}]{state["results"][n]}'
-                            for n in range(len(state["results"]))) +
-                            (f'\n(仅展示前{refer_max}个结果)' if len(state["results"]) > refer_max else '')
-                            )
+            out = ('有关结果如下，输入对应标号发起搜索，回复其他字符自动取消:\n'+
+                   '\n'.join(
+                    f'[{n}]{state["results"][n]}'
+                    for n in range(len(state["results"]))
+                    )
+                    +(f'\n(仅展示前{refer_max}个结果)' if len(state["results"]) > refer_max else '')
+            )
+            out = reply_out(msg_id=msg_id, output=out)
+            state['refer_msg_id'] = await cmd.send(out)
             raise RejectedException
         except wiki.exceptions.PageError:
             # * 没有任何相关条目
