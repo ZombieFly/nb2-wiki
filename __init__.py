@@ -1,4 +1,4 @@
-from nonebot import get_bot, get_driver, on_command
+from nonebot import get_driver, on_command
 from nonebot.adapters import Bot
 from nonebot.params import CommandArg
 from nonebot.typing import T_State
