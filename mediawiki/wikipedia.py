@@ -9,7 +9,7 @@ from decimal import Decimal
 from .exceptions import (
   PageError, DisambiguationError, RedirectError, HTTPTimeoutError,
   WikipediaException, ODD_ERROR_MESSAGE)
-from .util import cache, stdout_encode
+from .util import stdout_encode
 import re
 
 API_URL = 'https://zh.moegirl.org.cn/api.php'
@@ -102,7 +102,7 @@ def set_rate_limiting(rate_limit, min_wait=timedelta(milliseconds=50)):
   RATE_LIMIT_LAST_CALL = None
 
 
-@cache
+#@cache
 async def search(query, results=10, suggestion=False):
   '''
   Do a Wikipedia search for `query`.
@@ -142,7 +142,7 @@ async def search(query, results=10, suggestion=False):
   return list(search_results)
 
 
-@cache
+#@cache
 async def geosearch(latitude, longitude, title=None, results=10, radius=1000):
   '''
   Do a wikipedia geo search for `latitude` and `longitude`
@@ -186,7 +186,7 @@ async def geosearch(latitude, longitude, title=None, results=10, radius=1000):
   return list(search_results)
 
 
-@cache
+#@cache
 async def suggest(query):
   '''
   Get a Wikipedia search suggestion for `query`.
@@ -234,7 +234,7 @@ async def random(pages=1):
   return titles
 
 
-@cache
+#@cache
 async def summary(title, sentences=0, chars=0, auto_suggest=True, redirect=True) -> list:
   '''
   Plain text summary of the page.  .
@@ -248,7 +248,6 @@ async def summary(title, sentences=0, chars=0, auto_suggest=True, redirect=True)
 
   # use auto_suggest and redirect to get the correct article
   # also, use page's error checking to raise DisambiguationError if necessary
-  # ! 此处返回了错误的NoneType类型，而不是预期的Wikipedia类型
   page_info = await page(title, auto_suggest=auto_suggest, redirect=redirect)
   title = page_info.title
   pageid = page_info.pageid
@@ -703,7 +702,7 @@ class WikipediaPage(object):
     return self.content[index:next_index].lstrip("=").strip()
 
 
-@cache
+#@cache
 async def languages():
   '''
   List all the currently supported language prefixes (usually ISO language code).
