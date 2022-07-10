@@ -14,7 +14,7 @@ from pydantic import BaseModel
 class MWiki(BaseModel):
     name: str
     api_url: str
-    curdir_url: str
+    curid_url: str
     need_proxy: bool
 
 
@@ -30,16 +30,12 @@ class Data:
         self.__load()
 
     def get_wiki_list(
-        self, user_id: Optional[int] = None, group_id: Optional[int] = None
+        self, group_id: Optional[int] = None
     ) -> Union[WikiList, List[MWiki]]:
 
         wiki_list = self.__wiki_list
 
-        if user_id:
-            if user_id not in wiki_list["user"]:
-                wiki_list["user"][user_id] = []
-            return wiki_list["user"][user_id]
-        elif group_id:
+        if group_id:
             if group_id not in wiki_list["group"]:
                 wiki_list["group"][group_id] = []
             return wiki_list["group"][group_id]
@@ -49,44 +45,35 @@ class Data:
     def add_wiki(
         self,
         wiki: MWiki,
-        user_id: Optional[int] = None,
+
         group_id: Optional[int] = None,
     ):
-        wiki_list = cast(List[MWiki], self.get_wiki_list(user_id, group_id))
+        wiki_list = cast(List[MWiki], self.get_wiki_list(group_id))
         if wiki not in wiki_list:
             wiki_list.append(wiki)
 
-        if user_id:
-            self.__wiki_list["user"][user_id] = wiki_list
-        elif group_id:
-            self.__wiki_list["group"][group_id] = wiki_list
+
+        self.__wiki_list["group"][group_id] = wiki_list
 
         self.__dump()
 
     def remove_wiki(
         self,
         name: str,
-        user_id: Optional[int] = None,
         group_id: Optional[int] = None,
     ):
 
         wiki_list = list(
             filter(
                 lambda wiki: wiki.name != name,
-                cast(List[MWiki], self.get_wiki_list(user_id, group_id)),
+                cast(List[MWiki], self.get_wiki_list(group_id)),
             )
         )
 
-        if user_id:
-            if wiki_list:
-                self.__wiki_list["user"][user_id] = wiki_list
-            else:
-                self.__wiki_list["user"].pop(user_id)
-        elif group_id:
-            if wiki_list:
-                self.__wiki_list["group"][group_id] = wiki_list
-            else:
-                self.__wiki_list["group"].pop(group_id)
+        if wiki_list:
+            self.__wiki_list["group"][group_id] = wiki_list
+        else:
+            self.__wiki_list["group"].pop(group_id)
 
         self.__dump()
 
