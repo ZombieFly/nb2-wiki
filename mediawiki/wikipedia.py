@@ -47,7 +47,7 @@ def set_api_url(api_url):
 
 def set_curid_url(url):
   global CURID_URL
-  CURID_URL =url
+  CURID_URL = url
 
 
 def set_proxies(proxies):
@@ -234,7 +234,6 @@ async def random(pages=1):
   return titles
 
 
-#@cache
 async def summary(title, sentences=0, chars=0, auto_suggest=True, redirect=True) -> list:
   '''
   Plain text summary of the page.  .
