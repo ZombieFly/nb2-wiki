@@ -8,7 +8,6 @@ from nonebot.exception import RejectedException, FinishedException
 from .config import Config
 
 from . import mediawiki as wiki
-from .mediawiki import CURID_URL
 
 from .handle import Handle
 
@@ -16,9 +15,12 @@ global_config = get_driver().config
 config = Config.parse_obj(global_config)
 
 wiki.set_proxies({'All://':'http://127.0.0.1:10809'})
-wiki.set_api_url('https://minecraft.fandom.com/zh/api.php')
-wiki.set_user_agent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36')
-wiki.set_curid_url('https://minecraft.fandom.com/zh/index.php?curid=')
+wiki.set_api_url('https://mobile.moegirl.org.cn/api.php')
+#wiki.set_api_url('https://minecraft.fandom.com/zh/api.php')
+#wiki.set_user_agent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36')
+wiki.set_user_agent('Mozilla/5.0 (Linux; Android 12; SM-F9160 Build/SP1A.210812.016; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/102.0.5005.78 Mobile Safari/537.36')
+#wiki.set_curid_url('https://minecraft.fandom.com/zh/index.php?curid=')
+CURID_URL = 'https://zh.moegirl.org.cn/index?curid='
 
 refer_max = 10
 
