@@ -14,6 +14,8 @@ from .config import Config
 
 from . import mediawiki as wiki
 
+from .data import MWiki
+
 from .handle import Handle, Cmd
 
 global_config = get_driver().config
@@ -83,25 +85,15 @@ async def output(
 
 ###################################################################
 
-@cmd.handle()
-async def _(event, keywd= CommandArg()):
-    keywd = keywd.extract_plain_text()
-    args = dict()
-    args['group_id'] = event.group_id
-    if keywd[0] in get_driver().config.command_start:
-        keywd = keywd[1:].split()
-        args['fn_args'] = keywd[1:]
-        try:
-            await cmd.send(getattr(Cmd, keywd[0])(args))
-        except AttributeError:
-            __wiki = getattr(Cmd, 'select_wiki')(keywd[0], args['group_id'])
-            wiki.API_URL = __wiki['api_url']
-            wiki.CURID_URL = __wiki['curid_url']
-        except Exception as err:
-            await cmd.finish(err)
-
 @search.handle()
-async def _(bot: Bot, event: GroupMessageEvent, state: T_State, keywd= CommandArg()):
+async def _search(bot: Bot, event: GroupMessageEvent, state: T_State, keywd= CommandArg()):
+    try:
+        #直接调用搜索
+        keywd = keywd.extract_plain_text()
+    except:
+        #通过Cmd子命令调用
+        pass
+
     numb:str = event.message.extract_plain_text()
     msg_id = event.message_id
     if numb and not keywd:
@@ -110,7 +102,11 @@ async def _(bot: Bot, event: GroupMessageEvent, state: T_State, keywd= CommandAr
         await bot.delete_msg(message_id=state['refer_msg_id']['message_id'])
         try:
             numb = int(numb)
-            await search.send(await output(title=state['results'][numb], msg_id=msg_id, is_reply=True, has_title=True))
+            await search.send(await output(title=state['results'][numb],
+                                            msg_id=msg_id,
+                                            is_reply=True,
+                                            has_title=True)
+                    )
         except ValueError:
             #输入的非数字时的处理
             await search.send('取消搜索')
@@ -123,7 +119,7 @@ async def _(bot: Bot, event: GroupMessageEvent, state: T_State, keywd= CommandAr
         # * 会话开启的第一次处理
         try:
             # * 有直接对应的页面
-            await search.finish(await output(keywd.extract_plain_text(), redirect=True, msg_id=msg_id, is_reply=True))
+            await search.finish(await output(keywd, redirect=True, msg_id=msg_id, is_reply=True))
         except wiki.exceptions.DisambiguationError as msg:
             # * 没有对应页面，但可生成相似结果列表
             state['results'] = Handle(msg).refer_to_list(max=refer_max)
@@ -140,4 +136,28 @@ async def _(bot: Bot, event: GroupMessageEvent, state: T_State, keywd= CommandAr
         except wiki.exceptions.PageError:
             # * 没有任何相关条目
             await search.finish(reply_out(output='没有找到任何相关结果', msg_id=msg_id))
-        
+
+@cmd.handle()
+async def _cmd(bot:Bot, event: GroupMessageEvent,state: T_State, keywd= CommandArg()):
+    args = dict()
+    args['group_id'] = event.group_id
+    try:
+        keywd = keywd.extract_plain_text()
+    except AttributeError:
+        await _search(bot, event, state, keywd)
+    else: 
+        if keywd[0] in get_driver().config.command_start:
+            #解析出子命令与参数
+            keywd = keywd[1:].split()
+            args['fn_args'] = keywd[1:]
+            try:
+                #* 尝试执行子命令
+                await cmd.send(getattr(Cmd, keywd[0])(args))
+            except AttributeError:
+                #* 不存在对应子命令时，调用seletc_wiki函数，获取可能的对应的wiki配置
+                __wiki = Cmd.select_mwiki(keywd[0], args['group_id'])
+                wiki.set_api_url(__wiki.api_url)
+                wiki.set_curid_url(__wiki.curid_url)
+                await _search(bot, event, state, keywd)
+            except Exception as err:
+                await cmd.finish(str(err))

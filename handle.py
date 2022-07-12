@@ -1,10 +1,11 @@
 import re
 import json
+from typing import Tuple
 
 from .data import Data, MWiki
 
 
-#文字处理部分
+#* 文字处理部分
 class Handle:
     '''
     用以处理简介、搜索结果输出
@@ -32,10 +33,18 @@ class Handle:
         txt = (self.raw if not txt else txt)
         return  (txt if len(txt) <= max or not max else txt[:max] + f'……\n[字数大于{max}字部分被省略]')
 
-
+#* 子命令
 class Cmd:
     @classmethod
     def add(self, args):
+        """#增加记录
+
+        Args:
+            args (dict): 传入参数
+
+        Returns:
+            str: 执行结果
+        """        
         fn_args = args['fn_args']
         url = (fn_args[1] if fn_args[1][-1] == r'/' else fn_args[1]+r'/')
         Data().add_wiki(
@@ -69,21 +78,31 @@ class Cmd:
         return result
 
     @classmethod
-    def select_wiki(self, wiki_name, group_id):
+    def select_mwiki(self, wiki_name:str, group_id:int) -> Tuple[MWiki, None]:
+        """
+        获得已记录的MWiki对象
+        不存在时返回None
+
+        Args:
+            wiki_name (str): wiki记录名称
+            group_id (int): 群id
+
+        Returns:
+            MWiki | None
+        """        
         wiki_list = Data().get_wiki_list(group_id)
         if wiki_name in (
             wiki.name
             for wiki in wiki_list
                         ):
-            __wiki = {}
+            __wiki = MWiki()
             for wiki in wiki_list:
                 if wiki_name == wiki.name:
-                    __wiki['api_url'] = wiki.api_url
-                    __wiki['curid_url'] = wiki.curid_url
-                    __wiki['need_proxy'] = wiki.need_proxy
+                    __wiki = wiki
             return __wiki
         else:
-            return "没有找到对应该名称的已记录wiki"
+            #* 不存在对应wiki配置
+            return None
 
     @classmethod
     def demo(self, args: dict):
