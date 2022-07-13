@@ -5,12 +5,12 @@ import time
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from decimal import Decimal
+import re
 
 from .exceptions import (
   PageError, DisambiguationError, RedirectError, HTTPTimeoutError,
   WikipediaException, ODD_ERROR_MESSAGE)
 from .util import stdout_encode
-import re
 
 API_URL = 'https://zh.moegirl.org.cn/api.php'
 CURID_URL = 'https://minecraft.fandom.com/zh/index.php?curid='
@@ -741,6 +741,7 @@ async def _wiki_request(params):
   '''
   global RATE_LIMIT_LAST_CALL
   global USER_AGENT
+  global API_URL
   global PROXIES
 
   params['format'] = 'json'

@@ -5,17 +5,20 @@
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Union, cast
+from typing import Dict, List, Optional,Union, cast
 
 import yaml
 from pydantic import BaseModel
 
 
 class MWiki(BaseModel):
-    name: str
-    api_url: str
-    curid_url: str
-    need_proxy: bool
+    """MWiki
+    """    
+    name: str= ''
+    api_url: str= ''
+    curid_url: str= ''
+    user_agent: Optional[str]= None 
+    need_proxy: bool= False
 
 
 WikiList = Dict[str, Dict[int, List[MWiki]]]
