@@ -49,7 +49,7 @@ search = on_command(cmd_start[0], aliases= set(cmd_start[1:]))
 
 ###################################################################
 
-def reply_out(msg_id:int, output:str) -> str:
+def reply_out(msg_id:int, output:str) -> list[MessageSegment]:
     """给消息包装上“回复“
 
     Args:
@@ -57,7 +57,7 @@ def reply_out(msg_id:int, output:str) -> str:
         output (str): 所要包装的消息原文
 
     Returns:
-        str
+        list[MessageSegment]
     """
     return MessageSegment.reply(id_=msg_id) + MessageSegment.text(output)
 
@@ -191,7 +191,7 @@ async def _cmd(bot:Bot, event: GroupMessageEvent,state: T_State, keywd= CommandA
                         #* 管理员及群主会再尝试执行管理员级命令
                         await cmd.send(reply_out(event.message_id, await getattr(Cmd_admin, keywd[0])(args)))
                     else:
-                        #* 没有对应的命令或者是执行出错
+                        #* 普通成员调用不存在的平级命令或是管理员权限命令
                         await cmd.finish(reply_out(event.message_id, '不存在的命令，或者您没有足够的权限执行'))
             except AttributeError:
                 #* 不存在对应子命令时，调用seletc_wiki函数，获取可能的对应的wiki配置
