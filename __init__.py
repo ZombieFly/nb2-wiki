@@ -49,15 +49,15 @@ search = on_command(cmd_start[0], aliases= set(cmd_start[1:]))
 
 ###################################################################
 
-def reply_out(msg_id:int, output:str) -> str:
-    """给消息包装上“回复“
+def reply_out(msg_id:int, output:str) -> list[MessageSegment]:
+    """给消息包装上“回复”
 
     Args:
         msg_id (int): 所要回复的消息id
         output (str): 所要包装的消息原文
 
     Returns:
-        str
+        list[MessageSegment]
     """
     return MessageSegment.reply(id_=msg_id) + MessageSegment.text(output)
 
@@ -92,14 +92,15 @@ async def output(
     #! 此处curid_url无法正常赋值
     wiki.set_curid_url(mwiki.curid_url)
     wiki.set_user_agent(raw_MWiki.user_agent if not mwiki.user_agent else mwiki.user_agent)
-    wiki.set_proxies(PROXIES if mwiki.need_proxy else dict())
+    wiki.set_proxies(PROXIES if mwiki.need_proxy else {})
 
-    summ = await wiki.summary(title, auto_suggest= auto_suggest, redirect= redirect)
-    result = [title, summ[0], Handle(summ[1]).chars_max(max=200)]
+    curid, _summary = await wiki.summary(title, auto_suggest= auto_suggest, redirect= redirect)
+
+    _summary = Handle(Handle(_summary).chars_max(max=200)).nn_to_n()
     out = (
         (f'「{title}」\n' if has_title else '')
-        +f'{wiki.get_curid_url()}{result[1]}\n'
-        +f'{result[2]}'
+        +f'{wiki.CURID_URL}{curid}\n'
+        +f'{_summary}'
     )
     return out if is_reply and not msg_id else reply_out(msg_id, out)
 
@@ -123,10 +124,10 @@ async def _search(bot: Bot, event: GroupMessageEvent, state: T_State, keywd= Com
         try:
             numb = int(numb)
             outstr = await output(title=state['results'][numb],
-                                            mwiki= (raw_MWiki if not state.__contains__('mwiki') else state['mwiki']),
-                                            msg_id= msg_id,
-                                            is_reply= True,
-                                            has_title= True)
+                                mwiki= (raw_MWiki if not state.__contains__('mwiki') else state['mwiki']),
+                                msg_id= msg_id,
+                                is_reply= True,
+                                has_title= True)
                   
             await search.send(outstr)
         except ValueError:
@@ -142,10 +143,10 @@ async def _search(bot: Bot, event: GroupMessageEvent, state: T_State, keywd= Com
         try:
             # * 有直接对应的页面
                 outstr = await output(title= keywd,
-                            mwiki= (raw_MWiki if not state.__contains__('mwiki') else state['mwiki']),
-                            redirect= True,
-                            msg_id= msg_id, 
-                            is_reply= True)
+                                    mwiki= (raw_MWiki if not state.__contains__('mwiki') else state['mwiki']),
+                                    redirect= True,
+                                    msg_id= msg_id, 
+                                    is_reply= True)
                 await search.finish(outstr)
         except wiki.exceptions.DisambiguationError as msg:
             # * 没有对应页面，但可生成相似结果列表
@@ -191,7 +192,7 @@ async def _cmd(bot:Bot, event: GroupMessageEvent,state: T_State, keywd= CommandA
                         #* 管理员及群主会再尝试执行管理员级命令
                         await cmd.send(reply_out(event.message_id, await getattr(Cmd_admin, keywd[0])(args)))
                     else:
-                        #* 没有对应的命令或者是执行出错
+                        #* 普通成员调用不存在的平级命令或是管理员权限命令
                         await cmd.finish(reply_out(event.message_id, '不存在的命令，或者您没有足够的权限执行'))
             except AttributeError:
                 #* 不存在对应子命令时，调用seletc_wiki函数，获取可能的对应的wiki配置
