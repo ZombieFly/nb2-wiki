@@ -46,6 +46,9 @@ def set_api_url(api_url):
 
 
 def set_curid_url(url):
+  '''
+  设置curid_url链接
+  '''
   global CURID_URL
   CURID_URL = url
 
@@ -101,6 +104,11 @@ def set_rate_limiting(rate_limit, min_wait=timedelta(milliseconds=50)):
 
   RATE_LIMIT_LAST_CALL = None
 
+def get_curid_url() -> str:
+  '''
+  获取curid_url
+  '''
+  return CURID_URL
 
 #@cache
 async def search(query, results=10, suggestion=False):
