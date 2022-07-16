@@ -98,7 +98,7 @@ async def output(
     result = [title, summ[0], Handle(summ[1]).chars_max(max=200)]
     out = (
         (f'「{title}」\n' if has_title else '')
-        +f'{wiki.CURID_URL}{result[1]}\n'
+        +f'{wiki.get_curid_url()}{result[1]}\n'
         +f'{result[2]}'
     )
     return out if is_reply and not msg_id else reply_out(msg_id, out)
