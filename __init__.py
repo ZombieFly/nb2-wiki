@@ -99,7 +99,7 @@ async def output(
     _summary = Handle(Handle(_summary).chars_max(max=200)).nn_to_n()
     out = (
         (f'「{title}」\n' if has_title else '')
-        +f'{wiki.get_curid_url}{curid}\n'
+        +f'{wiki.get_curid_url()}{curid}\n'
         +f'{_summary}'
     )
     return out if is_reply and not msg_id else reply_out(msg_id, out)
