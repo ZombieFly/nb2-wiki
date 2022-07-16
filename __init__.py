@@ -24,7 +24,7 @@ config = Config.parse_obj(global_config)
 #* 初始MWiki
 raw_MWiki = MWiki(
     name= 'mc',
-    api_url= 'Https://minecraft.fandom.com/zh/api.php',
+    api_url= 'https://minecraft.fandom.com/zh/api.php',
     curid_url= 'https://minecraft.fandom.com/zh/index.php?curid=',
     user_agent= 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36',
     need_proxy= False
@@ -32,13 +32,7 @@ raw_MWiki = MWiki(
 
 
 PROXIES = config.proxies
-#api_url = 'https://mobile.moegirl.org.cn/api.php'
-#wiki.set_api_url('https://minecraft.fandom.com/zh/api.php')
-#wiki.set_user_agent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36')
-#USER_AGENT = 'Mozilla/5.0 (Linux; Android 12; SM-F9160 Build/SP1A.210812.016; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/102.0.5005.78 Mobile Safari/537.36'
-#wiki.set_curid_url('')
-#CURID_URL = 'https://zh.moegirl.org.cn/index?curid='
-refer_max = 10
+REFER_MAX = config.refer_max
 cmd_start = ['wiki', '维基']
 
 
@@ -150,13 +144,13 @@ async def _search(bot: Bot, event: GroupMessageEvent, state: T_State, keywd= Com
                 await search.finish(outstr)
         except wiki.exceptions.DisambiguationError as msg:
             # * 没有对应页面，但可生成相似结果列表
-            state['results'] = Handle(msg).refer_to_list(max=refer_max)
+            state['results'] = Handle(msg).refer_to_list(max=REFER_MAX)
             out = ('有关结果如下，输入对应标号发起搜索，回复其他字符自动取消:\n'+
                    '\n'.join(
                     f'[{n}]{state["results"][n]}'
                     for n in range(len(state["results"]))
                     )
-                    +(f'\n(仅展示前{refer_max}个结果)' if (len(state["results"]) > refer_max) else '')
+                    +(f'\n(仅展示前{REFER_MAX}个结果)' if (len(state["results"]) > REFER_MAX) else '')
             )
             out = reply_out(msg_id=msg_id, output=out)
             state['refer_msg_id'] = await search.send(out)

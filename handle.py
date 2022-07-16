@@ -42,7 +42,7 @@ class Cmd_member:
     """无权限限制命令
     """    
     @classmethod
-    async def list(self, args):
+    async def list(cls, args):
         wiki_list = Data().get_wiki_list(args['group_id'])
 
         if wiki_list:
@@ -56,7 +56,7 @@ class Cmd_member:
         return result
 
     @classmethod
-    async def select_mwiki(self, wiki_name:str, group_id:int) -> Optional[MWiki]:
+    async def select_mwiki(cls, wiki_name:str, group_id:int) -> Optional[MWiki]:
         """ 
         获得已记录的MWiki对象
         不存在时返回None
@@ -81,7 +81,7 @@ class Cmd_member:
             return None
 
     @classmethod
-    async def demo(self, args: dict):
+    async def demo(cls, args: dict):
         return json.dumps(args)
 
 
@@ -89,7 +89,7 @@ class Cmd_admin:
     """管理员权限命令
     """    
     @classmethod
-    async def add(self, args):
+    async def add(cls, args):
         """#增加记录
 
         Args:
@@ -105,10 +105,10 @@ class Cmd_admin:
                 url = 'https://' + url
             mwiki = MWiki(name= fn_args[0],
                         api_url= ((url+'api.php') if len(fn_args) == 2 else fn_args[1]),
-                        curid_url= ((url+'index.php?curid=') if len(fn_args) == 2 else fn_args[2]),
+                        curid_url= ((url+'index.php?curid=') if len(fn_args) <= 2 else fn_args[2]),
                         need_proxy=(False if len(fn_args) <=3 else bool(int(fn_args[3]))),
                         user_agent=('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36'
-                            if len(fn_args) <= 3 else ''.join(fn_args[4:]))
+                            if len(fn_args) <= 4 else ''.join(fn_args[4:]))
                         
                     )
         except Exception as err:
@@ -126,7 +126,7 @@ class Cmd_admin:
             return '记录完成'
 
     @classmethod
-    async def rm(self, args) -> str:
+    async def rm(cls, args) -> str:
         Data().remove_wiki(args['fn_args'][0], args['group_id'])
 
         return "移除wiki成功！"
