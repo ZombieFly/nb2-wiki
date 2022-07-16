@@ -242,9 +242,9 @@ async def random(pages=1):
   return titles
 
 
-async def summary(title, sentences=0, chars=0, auto_suggest=True, redirect=True) -> list:
+async def summary(title, sentences=0, chars=0, auto_suggest=True, redirect=True) -> list[int, str]:
   '''
-  Plain text summary of the page.  .
+  页面id与纯文本简介
   Keyword arguments:
 
   * sentences - if set, return the first `sentences` sentences (can be no greater than 10).
