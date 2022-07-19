@@ -21,25 +21,16 @@ from .handle import Cmd_admin, Cmd_member, Handle
 global_config = get_driver().config
 config = Config.parse_obj(global_config)
 
-#* 初始MWiki
-raw_MWiki = MWiki(
-    name= 'mc',
-    api_url= 'https://minecraft.fandom.com/zh/api.php',
-    curid_url= 'https://minecraft.fandom.com/zh/index.php?curid=',
-    user_agent= 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36',
-    need_proxy= False
-)
+PROXIES = config.PROXIES
+REFER_MAX = config.REFER_MAX
+RAW_MWIKI = config.RAW_MWIKI
+CMD_START = config.CMD_START
 
 
-PROXIES = config.proxies
-REFER_MAX = config.refer_max
-cmd_start = ['wiki', '维基']
+cmd = on_command(CMD_START[0], aliases= set(CMD_START), permission=GROUP)
 
-
-cmd = on_command(cmd_start[0], aliases= set(cmd_start), permission=GROUP)
-
-cmd_start = [i+' ' for i in cmd_start]
-search = on_command(cmd_start[0], aliases= set(cmd_start[1:]))
+CMD_START = [i+' ' for i in CMD_START]
+search = on_command(CMD_START[0], aliases= set(CMD_START[1:]))
 
 ###################################################################
 
@@ -59,7 +50,7 @@ def reply_out(msg_id:int, output:str) -> list[MessageSegment]:
 # ! 目前重定向可能会出现完全不相干的结果返回
 async def output(
     title: str,
-    mwiki: MWiki= raw_MWiki,
+    mwiki: MWiki= RAW_MWIKI,
     auto_suggest= True,
     redirect= True,
     is_reply= False,
@@ -85,7 +76,7 @@ async def output(
     #todo
     #! 此处curid_url无法正常赋值
     wiki.set_curid_url(mwiki.curid_url)
-    wiki.set_user_agent(raw_MWiki.user_agent if not mwiki.user_agent else mwiki.user_agent)
+    wiki.set_user_agent(RAW_MWIKI.user_agent if not mwiki.user_agent else mwiki.user_agent)
     wiki.set_proxies(PROXIES if mwiki.need_proxy else {})
 
     curid, _summary = await wiki.summary(title, auto_suggest= auto_suggest, redirect= redirect)
@@ -118,7 +109,7 @@ async def _search(bot: Bot, event: GroupMessageEvent, state: T_State, keywd= Com
         try:
             numb = int(numb)
             outstr = await output(title=state['results'][numb],
-                                mwiki= (raw_MWiki if not state.__contains__('mwiki') else state['mwiki']),
+                                mwiki= (RAW_MWIKI if not state.__contains__('mwiki') else state['mwiki']),
                                 msg_id= msg_id,
                                 is_reply= True,
                                 has_title= True)
@@ -137,7 +128,7 @@ async def _search(bot: Bot, event: GroupMessageEvent, state: T_State, keywd= Com
         try:
             # * 有直接对应的页面
                 outstr = await output(title= keywd,
-                                    mwiki= (raw_MWiki if not state.__contains__('mwiki') else state['mwiki']),
+                                    mwiki= (RAW_MWIKI if not state.__contains__('mwiki') else state['mwiki']),
                                     redirect= True,
                                     msg_id= msg_id, 
                                     is_reply= True)

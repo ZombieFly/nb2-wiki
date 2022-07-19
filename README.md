@@ -10,26 +10,32 @@
 
 ## 安装
 克隆此仓库至nonebot生成的目录中对应的存放插件的文件夹内。
-```shell
+```bash
 git clone https://github.com/ZombieFly/nb2-wiki.git
 ```
 
 ## 配置
-- ``PROXIES``(dict)：代理地址，默认值为``{'All://':'http://127.0.0.1:10809'}``，当所使用的MWiki的``need_proxy``为``True``时使用，可在``config.py``中声明，亦可于``__init__.py``中声明全局变量；
+可配置项存放于``config.py``，可按需求更改，或是直接于``__init__.py``内声明全局变量
+- ``PROXIES``(dict)：代理地址，默认值为``{'All://':'http://127.0.0.1:10809'}``，当所使用的MWiki的``need_proxy``为``True``时使用；
 
-- ``REFER_MAX``(int)：相关搜索结果最大返回值，默认值为``10``，配置方式同``PROXIES``；
+- ``REFER_MAX``(int)：相关搜索结果最大返回值，默认值为``10``，；
 
-- ``raw_MWiki``(MWiki): 默认MWiki对象，在直接使用``/wiki <关键词>``时会使用此wiki记录。
+- ``RAW_MWIKI``(MWiki): 默认MWiki对象，在直接使用``/wiki <关键词>``时会使用此wiki记录；
+
+- ``CMD_START``(list)：命令触发头，默认值为``['wiki', '维基']``
 
 ## 使用
 以下命令实例中，假定bot配置的命令头为``.``、``/``，请依据实际情况替换。
 
 - ##### ``/wiki <关键词>`` <br>
-通过``raw_MWiki``发起搜索，一个可用实例：``/wiki 绵羊``
+通过``raw_MWiki``发起搜索，一个可用实例：
+```
+/wiki 绵羊
+```
 
 - ##### ``/wiki.add <自定义wiki简称> <wiki地址>``<br>
     - 其中，``wiki地址``应为``/api.php``或``/index.php?curid=``前部分，链接开头的http协议可省略，（如``minecraft.fandom.com/zh/``）。当需要使用的api与curid链接前部分不相同时，应采用下文的可选形式分开指定;
-    - 此外，命令中两处的``/``、``.``可替换为**任一被定义的命令头**，例如在本文档假设的环境中，``.wiki/add``、``/wiki/add``等的皆可触发此子命令，下文将不再反复提及此特征；
+    - 此外，命令中两处的``/``、``.``可替换为**任一被定义的命令头**，例如在本文档假设的环境中，``.wiki/add``、``/wiki/add``等的皆可触发此子命令，下文将不再赘述此特征；
     - 一个可用的实例：
         ```
         .wiki.add mc minecraft.fandom.com/zh/
@@ -60,3 +66,9 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
   ```
   .wiki.moe 别当欧尼酱了
   ```
+
+## 待办
+- [ ] add子命令判断wiki api是否可用，以及是否可直接生成简介
+- [ ] add子命令添加的wiki名称已被使用，询问是否删除
+- [ ] rm子命令删除时无论是否存在目标wiki都是返回“删除成功”，应当增加wiki存在性判定
+- [ ] 优化搜索流程，减少请求数，亦或是提高网络I/O利用率
