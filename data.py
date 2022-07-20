@@ -5,7 +5,7 @@
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional,Union, cast
+from typing import Dict, List, Optional, Union, cast
 
 import yaml
 from pydantic import BaseModel
@@ -13,12 +13,12 @@ from pydantic import BaseModel
 
 class MWiki(BaseModel):
     """MWiki
-    """    
-    name: str= ''
-    api_url: str= ''
-    curid_url: str= ''
-    user_agent: Optional[str]= None 
-    need_proxy: bool= False
+    """
+    name: str = ''
+    api_url: str = ''
+    curid_url: str = ''
+    user_agent: Optional[str] = None
+    need_proxy: bool = False
 
 
 WikiList = Dict[str, Dict[int, List[MWiki]]]
@@ -28,7 +28,10 @@ class Data:
     __wiki_list: WikiList = {"user": {}, "group": {}}
     __path: Path
 
-    def __init__(self, path: Path = Path() / "data" / "mediawiki_search" / "wiki_list.yml"):
+    def __init__(
+        self,
+        path: Path = Path() / "data" / "mediawiki_search" / "wiki_list.yml"
+    ):
         self.__path = path
         self.__load()
 
@@ -54,7 +57,6 @@ class Data:
         wiki_list = cast(List[MWiki], self.get_wiki_list(group_id))
         if wiki not in wiki_list:
             wiki_list.append(wiki)
-
 
         self.__wiki_list["group"][group_id] = wiki_list
 
