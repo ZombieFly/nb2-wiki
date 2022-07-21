@@ -106,6 +106,8 @@ class Cmd_admin:
         Returns:
             str: 执行结果
         """
+        if args['fn_args'][0] in dir(cls):
+            return f'不被允许注册保留关键字"{args["fn_args"][0]}"作为名称'
         try:
             fn_args = args['fn_args']
             url = (fn_args[1] if fn_args[1][-1] == r'/' else fn_args[1]+r'/')
@@ -125,9 +127,11 @@ class Cmd_admin:
                     bool(int(fn_args[3]))
                 ),
                 user_agent=(
-                    r'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\
-                        \(KHTML, like Gecko) Chrome/102.0.5005.63\
-                         Safari/537.36'
+                    (
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
+                        r'AppleWebKit/537.36\(KHTML, like Gecko) Chrome/' +
+                        '102.0.5005.63 Safari/537.36'
+                    )
                     if len(fn_args) <= 4 else
                     ''.join(fn_args[4:])
                 )
