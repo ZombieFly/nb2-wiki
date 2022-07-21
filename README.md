@@ -58,7 +58,7 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
 - ##### ``.wiki.rm <自定义wiki简称>``
   从本群记录中移除指定已记录wiki。
 
-- ##### ``.wiki.list``
+- ##### ``.wiki.ls``
   列出本群所有已记录wiki。
 
 - ##### ``.wiki.<自定义wiki简称> <关键词>``

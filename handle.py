@@ -14,6 +14,7 @@ class Handle:
     '''
     用以处理简介、搜索结果输出
     '''
+
     def __init__(self, raw: str) -> None:
         self.raw: str = raw
 
@@ -47,7 +48,7 @@ class Cmd_member:
     """无权限限制命令
     """
     @classmethod
-    async def list(cls, args):
+    async def ls(cls, args):
         wiki_list = Data().get_wiki_list(args['group_id'])
 
         if wiki_list:
@@ -79,7 +80,7 @@ class Cmd_member:
         if wiki_name in (
             wiki.name
             for wiki in wiki_list
-                        ):
+        ):
             for _wiki in wiki_list:
                 if wiki_name == _wiki.name:
                     return _wiki
