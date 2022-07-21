@@ -28,7 +28,7 @@ RAW_MWIKI = config.RAW_MWIKI
 CMD_START = config.CMD_START
 
 
-cmd = on_command(CMD_START[0], aliases=set(CMD_START), permission=GROUP)
+cmd = on_command(CMD_START[0], aliases=set(CMD_START[1:]), permission=GROUP)
 
 CMD_START = [i+' ' for i in CMD_START]
 search = on_command(CMD_START[0], aliases=set(CMD_START[1:]))
@@ -223,7 +223,7 @@ async def _cmd(
                 if state['mwiki']:
                     try:
                         logger.debug(
-                            f'[S4]已记录wiki"{state["mwiki"].name}"被找到，尝试开始调用搜索'
+                            f'[S4]已记录wiki"{state["mwiki"].name}"被找到，尝试开始调用搜索，'
                             + f'搜索关键词为:{args["fn_args"][0]}'
                         )
                         await _search(bot, event, state, args["fn_args"][0])
@@ -238,4 +238,5 @@ async def _cmd(
                         )
                     )
             except Exception as err:
-                await cmd.finish(reply_out(event.message_id, str(err)))
+                logger.debug(f'[S6]触发意料外的异常:\n{repr(err)}')
+                await cmd.finish(reply_out(event.message_id, repr(err)))
