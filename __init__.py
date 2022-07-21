@@ -1,3 +1,4 @@
+from distutils.log import DEBUG
 from nonebot import get_driver, on_command
 from nonebot.adapters import Bot
 from nonebot.params import CommandArg
@@ -10,6 +11,9 @@ from nonebot.adapters.onebot.v11 import (
 from nonebot.exception import RejectedException, FinishedException
 from nonebot.adapters.onebot.v11.permission import GROUP
 from nonebot.log import logger
+
+if get_driver().config.log_level == DEBUG:
+    import traceback
 
 from .config import Config
 
@@ -199,7 +203,7 @@ async def _cmd(
                     )
                 except AttributeError as err:
                     logger.debug(
-                        f'[S1]执行普通权限命令触发异常<{err}>，逻辑为未寻找到普通权限命令"{to_run}"'
+                        f'[S1]执行普通权限命令触发异常<{repr(err)}>，逻辑为未寻找到普通权限命令"{to_run}"'
                     )
                     if event.sender.role in ['admin', 'owner']:
                         # * 管理员及群主会再尝试执行管理员级命令
@@ -237,6 +241,7 @@ async def _cmd(
                             '不存在的命令或是已记录wiki，请检查是否具有对应权限或者输入是否正确'
                         )
                     )
-            except Exception as err:
-                logger.debug(f'[S6]触发意料外的异常:\n{repr(err)}')
-                await cmd.finish(reply_out(event.message_id, repr(err)))
+            except Exception:
+                if get_driver().config.log_level == DEBUG:
+                    logger.debug(f'[S6]触发意料外的异常:\n{traceback.format_exc()}')
+                    await cmd.finish(reply_out(event.message_id, traceback.format_exc()))
