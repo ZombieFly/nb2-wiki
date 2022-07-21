@@ -48,6 +48,10 @@ class Cmd_member:
     """无权限限制命令
     """
     @classmethod
+    async def is_api_work(cls, mwiki: MWiki):
+        pass
+
+    @classmethod
     async def ls(cls, args):
         wiki_list = Data().get_wiki_list(args['group_id'])
 
@@ -106,7 +110,8 @@ class Cmd_admin:
         Returns:
             str: 执行结果
         """
-        if args['fn_args'][0] in dir(cls):
+        # * 阻止注册类属性的名称
+        if args['fn_args'][0] in (dir(cls) and dir(Cmd_member)):
             return f'不被允许注册保留关键字"{args["fn_args"][0]}"作为名称'
         try:
             fn_args = args['fn_args']
