@@ -4,9 +4,26 @@ from typing import Optional
 
 from .data import Data, MWiki
 
-from . import mediawiki as wiki
+from . import mediawiki as Wiki
 
 from .config import Config
+
+
+def url_format(url: str) -> str:
+    """给url加上https协议头与/后缀（如果没有的话）
+    """
+    url = (url if url[-1] == r'/' else url + r'/')
+    if not (url[0:7] == 'https://' or url[0:6] == 'http://'):
+        url = 'https://' + url
+    return url
+
+
+def set_wiki(wiki: Wiki, mwiki: MWiki, proxies=dict()):
+    wiki.set_api_url(mwiki.api_url)
+    wiki.set_curid_url(mwiki.curid_url)
+    wiki.set_user_agent(mwiki.user_agent)
+    wiki.set_proxies(proxies if mwiki.need_preoxy else dict())
+    return wiki
 
 
 # * 文字处理部分
@@ -48,7 +65,7 @@ class Cmd_member:
     """无权限限制命令
     """
     @classmethod
-    async def is_api_work(cls, mwiki: MWiki):
+    async def check_wiki(cls, mwiki: MWiki):
         pass
 
     @classmethod
@@ -115,16 +132,15 @@ class Cmd_admin:
             return f'不被允许注册保留关键字"{args["fn_args"][0]}"作为名称'
         try:
             fn_args = args['fn_args']
-            url = (fn_args[1] if fn_args[1][-1] == r'/' else fn_args[1]+r'/')
-            if not (url[0:7] == 'https://' or url[0:6] == 'http://'):
-                url = 'https://' + url
+            # 对url进行处理
+            url = url_format(fn_args[1])
             mwiki = MWiki(
                 name=fn_args[0],
-                api_url=((url+'api.php') if len(fn_args) == 2 else fn_args[1]),
+                api_url=((url + 'api.php') if len(fn_args) == 2 else url),
                 curid_url=(
-                    (url+'index.php?curid=')
+                    (url + 'index.php?curid=')
                     if len(fn_args) <= 2 else
-                    fn_args[2]
+                    url_format(fn_args[2])
                 ),
                 need_proxy=(
                     False
@@ -143,19 +159,17 @@ class Cmd_admin:
 
             )
         except Exception as err:
-            return str(err)
+            return repr(err)
         try:
-            wiki.set_api_url(mwiki.api_url)
-            wiki.set_user_agent(mwiki.user_agent)
-            wiki.set_proxies(Config.proxies if mwiki.need_proxy else dict())
+            wiki = set_wiki(Wiki(), mwiki, Config.PROXIES)
             await wiki.search('1')
         except Exception as err:
-            return str(err)
+            return repr(err)
         else:
             Data().add_wiki(mwiki, args['group_id'])
             return '记录完成'
 
-    @classmethod
+    @ classmethod
     async def rm(cls, args) -> str:
         Data().remove_wiki(args['fn_args'][0], args['group_id'])
 
