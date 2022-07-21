@@ -9,6 +9,7 @@ from nonebot.adapters.onebot.v11 import (
 )
 from nonebot.exception import RejectedException, FinishedException
 from nonebot.adapters.onebot.v11.permission import GROUP
+from nonebot.log import logger
 
 from .config import Config
 
@@ -176,7 +177,6 @@ async def _search(
 async def _cmd(
     bot: Bot, event: GroupMessageEvent, state: T_State, keywd=CommandArg()
 ):
-    await bot.poke
     args = dict()
     args['group_id'] = event.group_id
     try:
@@ -186,7 +186,7 @@ async def _cmd(
     else:
         if keywd[0] in get_driver().config.command_start:
             # 解析出子命令与参数
-            _, *args['fn_args'] = keywd[1:].split()
+            to_run, *args['fn_args'] = keywd[1:].split()
             try:
                 # * 尝试执行子命令
                 try:
@@ -194,41 +194,48 @@ async def _cmd(
                     await cmd.send(
                         reply_out(
                             event.message_id,
-                            await getattr(Cmd_member, keywd[0])(args)
+                            await getattr(Cmd_member, to_run)(args)
                         )
                     )
-                except AttributeError:
-                    raise AttributeError
-                except Exception:
-                    # ? 这里捕获了所有的异常，或许没法处理执行出现异常的平级命令
-                    # * 平级命令执行错误（大概率是没这个平级命令）
+                except AttributeError as err:
+                    logger.debug(
+                        f'[S1]执行普通权限命令触发异常<{err}>，逻辑为未寻找到普通权限命令"{to_run}"'
+                    )
                     if event.sender.role in ['admin', 'owner']:
                         # * 管理员及群主会再尝试执行管理员级命令
                         await cmd.send(
                             reply_out(
                                 event.message_id,
-                                await getattr(Cmd_admin, keywd[0])(args)
+                                await getattr(Cmd_admin, to_run)(args)
                             )
                         )
+                        logger.debug(f"[S2]找到并执行了管理员级命令{to_run}")
                     else:
                         # * 普通成员调用不存在的平级命令或是管理员权限命令
-                        await cmd.finish(
-                            reply_out(event.message_id, '不存在的命令，或者您没有足够的权限执行')
-                        )
+                        raise AttributeError
             except AttributeError:
+                logger.debug(f'[S3]子命令"{to_run}"未找到，尝试从已记录wiki中寻找')
                 # * 不存在对应子命令时，调用seletc_wiki函数，获取可能的对应的wiki配置
                 # 传入MWiki类
                 state['mwiki'] = await Cmd_member.select_mwiki(
-                    keywd[0], args['group_id']
-                    )
+                    to_run, args['group_id']
+                )
                 if state['mwiki']:
-                    await _search(bot, event, state, keywd)
+                    try:
+                        logger.debug(
+                            f'[S4]已记录wiki"{state["mwiki"].name}"被找到，尝试开始调用搜索'
+                            + f'搜索关键词为:{args["fn_args"][0]}'
+                        )
+                        await _search(bot, event, state, args["fn_args"][0])
+                    except IndexError:
+                        logger.debug(
+                            f'[S5]已记录wiki"{state["mwiki"].name}"被找到，但不存在关键词')
                 else:
                     await cmd.finish(
                         reply_out(
                             event.message_id,
                             '不存在的命令或是已记录wiki，请检查是否具有对应权限或者输入是否正确'
-                            )
+                        )
                     )
             except Exception as err:
                 await cmd.finish(reply_out(event.message_id, str(err)))
