@@ -12,8 +12,8 @@ class Config(BaseSettings):
         name='mc',
         api_url='https://minecraft.fandom.com/zh/api.php',
         curid_url='https://minecraft.fandom.com/zh/index.php?curid=',
-        user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\
-            /537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36',
+        user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit' +
+        '537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36',
         need_proxy=False
     )
     # 可用触发命令头

@@ -1,6 +1,7 @@
 import re
 import json
 from typing import Optional
+import traceback
 
 from .data import Data, MWiki
 
@@ -18,12 +19,12 @@ def url_format(url: str) -> str:
     return url
 
 
-def set_wiki(wiki: Wiki, mwiki: MWiki, proxies=dict()):
-    wiki.set_api_url(mwiki.api_url)
-    wiki.set_curid_url(mwiki.curid_url)
-    wiki.set_user_agent(mwiki.user_agent)
-    wiki.set_proxies(proxies if mwiki.need_preoxy else dict())
-    return wiki
+def set_wiki(mwiki: MWiki, proxies=dict()):
+    Wiki.set_api_url(mwiki.api_url)
+    Wiki.set_curid_url(mwiki.curid_url)
+    Wiki.set_user_agent(mwiki.user_agent)
+    Wiki.set_proxies(proxies if mwiki.need_proxy else dict())
+    return None
 
 
 # * 文字处理部分
@@ -158,13 +159,15 @@ class Cmd_admin:
                 )
 
             )
-        except Exception as err:
-            return repr(err)
+        except Exception:
+            return traceback.format_exc()
+
         try:
-            wiki = set_wiki(Wiki(), mwiki, Config.PROXIES)
-            await wiki.search('1')
-        except Exception as err:
-            return repr(err)
+            # 判断wiki api可用性
+            set_wiki(mwiki, Config.__annotations__['PROXIES'])
+            await Wiki.search('1')
+        except Exception:
+            return traceback.format_exc()
         else:
             Data().add_wiki(mwiki, args['group_id'])
             return '记录完成'
