@@ -8,8 +8,14 @@ from decimal import Decimal
 import re
 
 from .exceptions import (
-    PageError, DisambiguationError, RedirectError, HTTPTimeoutError,
-    WikipediaException, ODD_ERROR_MESSAGE)
+    NoExtractError,
+    PageError,
+    DisambiguationError,
+    RedirectError,
+    HTTPTimeoutError,
+    WikipediaException,
+    ODD_ERROR_MESSAGE
+)
 from .util import stdout_encode
 
 API_URL = 'https://zh.moegirl.org.cn/api.php'
@@ -133,8 +139,10 @@ async def search(query, results=10, suggestion=False):
     }
     if suggestion:
         search_params['srinfo'] = 'suggestion'
-
-    raw_results = await _wiki_request(search_params)
+    try:
+        raw_results = await _wiki_request(search_params)
+    except httpx.ReadError:
+        raise HTTPTimeoutError()
 
     if 'error' in raw_results:
         if raw_results['error']['info'] in ('HTTP request timed out.', 'Pool queue is full'):
@@ -278,7 +286,10 @@ async def summary(title, sentences=0, chars=0, auto_suggest=True, redirect=True)
     else:
         query_params['exintro'] = ''
     request = await _wiki_request(query_params)
-    summary = request['query']['pages'][pageid]['extract']
+    try:
+        summary = request['query']['pages'][pageid]['extract']
+    except KeyError:
+        raise NoExtractError()
 #  url = request['query']['pages'][pageid]['fullurl']
 
 # return [url, summary]

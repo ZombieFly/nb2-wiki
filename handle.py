@@ -128,13 +128,14 @@ class Cmd_admin:
         Returns:
             str: 执行结果
         """
-        # * 阻止注册类属性的名称
+        # * 阻止注册类属性作为名称
         if args['fn_args'][0] in (dir(cls) and dir(Cmd_member)):
-            return f'不被允许注册保留关键字"{args["fn_args"][0]}"作为名称'
+            return f'不被允许注册保留关键字<{args["fn_args"][0]}>作为名称'
         try:
             fn_args = args['fn_args']
             # 对url进行处理
             url = url_format(fn_args[1])
+            # 构造Mwiki对象用以记录
             mwiki = MWiki(
                 name=fn_args[0],
                 api_url=((url + 'api.php') if len(fn_args) == 2 else url),
@@ -163,9 +164,10 @@ class Cmd_admin:
             return traceback.format_exc()
 
         try:
-            # 判断wiki api可用性
+            # * 判断wiki api可用性
             set_wiki(mwiki, Config.__annotations__['PROXIES'])
-            await Wiki.search('1')
+            query = await Wiki.random()
+            await Wiki.search(query[0])
         except Exception:
             return traceback.format_exc()
         else:
