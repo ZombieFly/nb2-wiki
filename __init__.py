@@ -12,6 +12,8 @@ from nonebot.exception import RejectedException, FinishedException
 from nonebot.adapters.onebot.v11.permission import GROUP
 from nonebot.log import logger
 
+from .mediawiki.exceptions import NoExtractError
+
 if get_driver().config.log_level == DEBUG:
     import traceback
 
@@ -86,9 +88,12 @@ async def output(
     )
     wiki.set_proxies(PROXIES if mwiki.need_proxy else {})
 
-    curid, _summary = await wiki.summary(
-        title, auto_suggest=auto_suggest, redirect=redirect
-    )
+    try:
+        curid, _summary = await wiki.summary(
+            title, auto_suggest=auto_suggest, redirect=redirect
+        )
+    except NoExtractError:
+        return reply_out(msg_id, '目标wiki不支持extract')
 
     _summary = Handle(Handle(_summary).chars_max(max=200)).nn_to_n()
     out = (
@@ -120,6 +125,7 @@ async def _search(
         await bot.delete_msg(message_id=state['refer_msg_id']['message_id'])
         try:
             numb = int(numb)
+            logger.debug(f'用户输入的标号是{str(numb)}')
             outstr = await output(
                 title=state['results'][numb],
                 mwiki=(
@@ -228,9 +234,9 @@ async def _cmd(
                     try:
                         logger.debug(
                             f'[S4]已记录wiki"{state["mwiki"].name}"被找到，尝试开始调用搜索，'
-                            + f'搜索关键词为:{args["fn_args"][0]}'
+                            + f'搜索关键词为<{" ".join(args["fn_args"])}>'
                         )
-                        await _search(bot, event, state, args["fn_args"][0])
+                        await _search(bot, event, state, " ".join(args["fn_args"]))
                     except IndexError:
                         logger.debug(
                             f'[S5]已记录wiki"{state["mwiki"].name}"被找到，但不存在关键词')
