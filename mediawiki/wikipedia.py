@@ -139,10 +139,8 @@ async def search(query, results=10, suggestion=False):
     }
     if suggestion:
         search_params['srinfo'] = 'suggestion'
-    try:
-        raw_results = await _wiki_request(search_params)
-    except httpx.ReadError:
-        raise HTTPTimeoutError()
+
+    raw_results = await _wiki_request(search_params)
 
     if 'error' in raw_results:
         if raw_results['error']['info'] in ('HTTP request timed out.', 'Pool queue is full'):
@@ -792,7 +790,7 @@ async def _wiki_request(params):
         wait_time = (RATE_LIMIT_LAST_CALL +
                      RATE_LIMIT_MIN_WAIT) - datetime.now()
         time.sleep(int(wait_time.total_seconds()))
-    async with httpx.AsyncClient(proxies=PROXIES) as client:
+    async with httpx.AsyncClient(proxies=PROXIES, timeout=None) as client:
         r = await client.get(API_URL, params=params, headers=headers)
 
     if RATE_LIMIT:
