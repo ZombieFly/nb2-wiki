@@ -36,7 +36,7 @@ class Data:
         self.__load()
 
     def get_wiki_list(
-        self, group_id: Optional[int] = None
+        self, group_id: int
     ) -> Union[WikiList, List[MWiki]]:
 
         wiki_list = self.__wiki_list
@@ -48,11 +48,18 @@ class Data:
         else:
             return wiki_list
 
+    def has_wiki(self, name: str, group_id: int) -> bool:
+        return bool(
+            filter(
+                lambda wiki: wiki.name == name,
+                cast(List[MWiki], self.get_wiki_list(group_id))
+            )
+        )
+
     def add_wiki(
         self,
         wiki: MWiki,
-
-        group_id: Optional[int] = None,
+        group_id: int,
     ):
         wiki_list = cast(List[MWiki], self.get_wiki_list(group_id))
         if wiki not in wiki_list:
@@ -65,22 +72,34 @@ class Data:
     def remove_wiki(
         self,
         name: str,
-        group_id: Optional[int] = None,
-    ):
+        group_id: int,
+    ) -> bool:
+        """删除已记录wiki
 
-        wiki_list = list(
-            filter(
-                lambda wiki: wiki.name != name,
-                cast(List[MWiki], self.get_wiki_list(group_id)),
+        Args:
+            name (str): wiki记录名
+            group_id (Optional[int], optional): 群号. Defaults to None.
+
+        Returns:
+            bool: 是否成功删除，返回False即不存在目标wiki
+        """
+        if self.has_wiki(name, cast(int, group_id)):
+            wiki_list = list(
+                filter(
+                    lambda wiki: wiki.name != name,
+                    cast(List[MWiki], self.__wiki_list["group"][group_id]),
+                )
             )
-        )
 
-        if wiki_list:
-            self.__wiki_list["group"][group_id] = wiki_list  # type: ignore
+            if wiki_list:
+                self.__wiki_list["group"][group_id] = wiki_list  # type: ignore
+            else:
+                self.__wiki_list["group"].pop(group_id)  # type: ignore
+
+            self.__dump()
+            return True
         else:
-            self.__wiki_list["group"].pop(group_id)  # type: ignore
-
-        self.__dump()
+            return False
 
     def __load(self):
         try:

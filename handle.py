@@ -5,6 +5,8 @@ from enum import Enum, unique
 from typing import Dict, Optional
 import traceback
 
+from httpx import ConnectError
+
 from .data import Data, MWiki
 
 from . import mediawiki as Wiki
@@ -15,11 +17,13 @@ from .config import Config
 
 @unique
 class Status(Enum):
-    OK = {0: "可生成简介"}
-    SUMMARY_ERROR = {1: "api可用，不可生成简介"}
-    API_ERROR = {2: "api不可用"}
+    OK = {"200": "可生成简介"}
+    SUMMARY_ERROR = {"204": "api可用，不可生成简介"}
+    API_ERROR = {"400": "api不可用"}
+    DOMAIN_ERROR = {"000": "域名解析异常，请检查输入是否正确"}
+    URL_ERROR = {"403": "链接不可达，请检查输入"}
 
-    def get_code(self) -> int:
+    def get_code(self) -> str:
         """获取状态码
 
         Returns:
@@ -71,6 +75,10 @@ async def check_wiki(mwiki: MWiki, proxies=dict()) -> Status:
         return Status.SUMMARY_ERROR
     except JSONDecodeError:
         return Status.API_ERROR
+    except ConnectError:
+        return Status.DOMAIN_ERROR
+    except Exception as err:
+        raise err
     else:
         return Status.OK
 
@@ -99,9 +107,8 @@ async def select_mwiki(wiki_name: str, group_id: int) -> Optional[MWiki]:
         # * 不存在对应wiki配置
         return None
 
+
 # * 文字处理部分
-
-
 class Handle:
     '''
     用以处理简介、搜索结果输出
@@ -203,6 +210,8 @@ class Cmd_admin:
                 )
 
             )
+        except IndexError:
+            return '参数缺省，请重新输入'
         except Exception:
             return traceback.format_exc()
 
@@ -210,18 +219,20 @@ class Cmd_admin:
             # * 判断wiki api可用性
             api_status = await check_wiki(mwiki, Config.__annotations__['PROXIES'])
             if api_status == Status.OK:
-                pass
+                Data().add_wiki(mwiki, args['group_id'])
+                return '记录完成'
             else:
                 return api_status.get_msg()
 
         except Exception:
             return traceback.format_exc()
 
-        Data().add_wiki(mwiki, args['group_id'])
-        return '记录完成'
-
     @ classmethod
     async def rm(cls, args) -> str:
-        Data().remove_wiki(args['fn_args'][0], args['group_id'])
-
-        return "移除wiki成功！"
+        try:
+            if Data().remove_wiki(args['fn_args'][0], args['group_id']):
+                return "移除wiki成功！"
+            else:
+                return "不存在这个名称的已记录wiki"
+        except Exception:
+            return traceback.format_exc()
