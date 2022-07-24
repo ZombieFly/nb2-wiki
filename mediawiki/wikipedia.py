@@ -274,7 +274,7 @@ async def summary(
     # also, use page's error checking to raise DisambiguationError if necessary
     page_info = await page(title, auto_suggest=auto_suggest, redirect=redirect)
     title = page_info.title
-    pageid = page_info.pageid
+    pageid: int = page_info.pageid
 
     query_params = {
         'prop': 'extracts',

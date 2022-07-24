@@ -1,6 +1,6 @@
 import re
 import json
-from typing import Optional
+from typing import Dict, Optional
 import traceback
 
 from .data import Data, MWiki
@@ -19,7 +19,7 @@ def url_format(url: str) -> str:
     return url
 
 
-def set_wiki(mwiki: MWiki, proxies=dict()):
+def set_wiki(mwiki: MWiki, proxies: Dict = dict()):
     Wiki.set_api_url(mwiki.api_url)
     Wiki.set_curid_url(mwiki.curid_url)
     Wiki.set_user_agent(mwiki.user_agent)
@@ -32,28 +32,27 @@ class Handle:
     '''
     用以处理简介、搜索结果输出
     '''
-
-    def __init__(self, raw: str) -> None:
-        self.raw: str = raw
-
-    def nn_to_n(self) -> str:
+    @classmethod
+    def nn_to_n(cls, raw) -> str:
         '''
         将文本中的两个回车替换为一个回车
         '''
-        return re.sub(r"\n\n", r"\n", self.raw)
+        return re.sub(r"\n\n", r"\n", raw)
 
-    def refer_to_list(self, max: int = 0) -> list:
+    @classmethod
+    def refer_to_list(cls, raw: str, max: int = 0) -> list:
         '''
         将建议列表以列表形式输出,参数max控制返回列表最大长度
         '''
-        ret: list = self.raw.options  # type: ignore
+        ret: list = raw.options  # type: ignore
         return ret if (max >= len(ret) or not max) else ret[:max]
 
-    def chars_max(self, txt='', max=0) -> str:
+    @classmethod
+    def chars_max(cls, raw: str, txt='', max=0) -> str:
         '''
         控制输入文本最大字数,并在末尾追加省略信息
         '''
-        txt = (self.raw if not txt else txt)
+        txt = (raw if not txt else txt)
         return (
             txt
             if len(txt) <= max or not max else

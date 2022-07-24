@@ -24,7 +24,7 @@ from . import mediawiki as wiki
 
 from .data import MWiki
 
-from .handle import Cmd_admin, Cmd_member, Handle
+from .handle import set_wiki, Cmd_admin, Cmd_member, Handle
 
 global_config = get_driver().config
 config = Config.parse_obj(global_config)
@@ -60,11 +60,10 @@ def reply_out(msg_id: int, output: str) -> Message:
 # ! 目前重定向可能会出现完全不相干的结果返回
 async def output(
     title: str,
-    msg_id: int,
     mwiki: MWiki = RAW_MWIKI,
+    msg_id: int = int(),
     auto_suggest=True,
     redirect=True,
-    is_reply=False,
     has_title=False,
 ) -> Union[str, Message]:
     """将输入的标题转化为格式化的消息
@@ -72,22 +71,16 @@ async def output(
     Args:
         title (str): 页面标题
         mwiki (MWiki): MWik对象
+        msg_id (int): 所“回复”的消息id Defaults to int().
         auto_suggest (bool, optional): 是否启用自动建议 Defaults to True.
         redirect (bool, optional): 是否接受自动重定向 Defaults to True.
-        is_reply (bool, optional): 所发送的消息是否“回复” Defaults to False.
         has_title (bool, optional): 消息内是否再次注明标题 Defaults to False.
-        msg_id (int, optional): 所“回复”的消息id Defaults to None.
 
     Returns:
-        str
+        Union[str, Message]
     """
     # 大型赋值现场
-    wiki.set_api_url(mwiki.api_url)
-    wiki.set_curid_url(mwiki.curid_url)
-    wiki.set_user_agent(
-        RAW_MWIKI.user_agent if not mwiki.user_agent else mwiki.user_agent
-    )
-    wiki.set_proxies(PROXIES if mwiki.need_proxy else {})
+    set_wiki(mwiki, PROXIES)
 
     try:
         curid, _summary = await wiki.summary(
@@ -96,14 +89,14 @@ async def output(
     except NoExtractError:
         return reply_out(msg_id, '目标wiki不支持extract')
 
-    _summary = Handle(Handle(_summary).chars_max(  # type: ignore
-        max=200)).nn_to_n()  # type: ignore
+    _summary = Handle.nn_to_n(Handle().chars_max(
+        _summary, max=200))  # type: ignore
     out = (
         (f'「{title}」\n' if has_title else '')
         + f'{wiki.get_curid_url()}{curid}\n'
         + f'{_summary}'
     )
-    return out if is_reply and not msg_id else reply_out(msg_id, out)
+    return out if not msg_id else reply_out(msg_id, out)
 
 ###################################################################
 
@@ -136,7 +129,6 @@ async def _search(
                     state['mwiki']
                 ),
                 msg_id=msg_id,
-                is_reply=True,
                 has_title=True
             )
             await search.send(outstr)
@@ -161,13 +153,12 @@ async def _search(
                 ),
                 redirect=True,
                 msg_id=msg_id,
-                is_reply=True
             )
             await search.finish(outstr)
         except wiki.exceptions.DisambiguationError as msg:
             # * 没有对应页面，但可生成相似结果列表
-            state['results'] = Handle(msg := str(msg)).refer_to_list(
-                max=REFER_MAX)
+            state['results'] = Handle.refer_to_list(
+                msg := str(msg), max=REFER_MAX)
             out = (
                 '有关结果如下，输入对应标号发起搜索，回复其他字符自动取消:\n' +
                 '\n'.join(
