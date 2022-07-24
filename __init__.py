@@ -1,6 +1,7 @@
 from distutils.log import DEBUG
+from typing import Union
 from nonebot import get_driver, on_command
-from nonebot.adapters import Bot
+from nonebot.adapters import Bot, Message
 from nonebot.params import CommandArg
 from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import (
@@ -42,7 +43,7 @@ search = on_command(CMD_START[0], aliases=set(CMD_START[1:]))
 ###################################################################
 
 
-def reply_out(msg_id: int, output: str) -> list[MessageSegment]:
+def reply_out(msg_id: int, output: str) -> Message:
     """给消息包装上“回复”
 
     Args:
@@ -50,7 +51,7 @@ def reply_out(msg_id: int, output: str) -> list[MessageSegment]:
         output (str): 所要包装的消息原文
 
     Returns:
-        list[MessageSegment]
+        Message
     """
     return MessageSegment.reply(id_=msg_id) + MessageSegment.text(output)
 
@@ -59,13 +60,13 @@ def reply_out(msg_id: int, output: str) -> list[MessageSegment]:
 # ! 目前重定向可能会出现完全不相干的结果返回
 async def output(
     title: str,
+    msg_id: int,
     mwiki: MWiki = RAW_MWIKI,
     auto_suggest=True,
     redirect=True,
     is_reply=False,
     has_title=False,
-    msg_id: int = None,
-) -> str:
+) -> Union[str, Message]:
     """将输入的标题转化为格式化的消息
 
     Args:
@@ -95,7 +96,8 @@ async def output(
     except NoExtractError:
         return reply_out(msg_id, '目标wiki不支持extract')
 
-    _summary = Handle(Handle(_summary).chars_max(max=200)).nn_to_n()
+    _summary = Handle(Handle(_summary).chars_max(  # type: ignore
+        max=200)).nn_to_n()  # type: ignore
     out = (
         (f'「{title}」\n' if has_title else '')
         + f'{wiki.get_curid_url()}{curid}\n'
@@ -124,7 +126,7 @@ async def _search(
         # * 撤回搜索结果列表消息
         await bot.delete_msg(message_id=state['refer_msg_id']['message_id'])
         try:
-            numb = int(numb)
+            numb = int(numb)  # type: ignore
             logger.debug(f'用户输入的标号是{str(numb)}')
             outstr = await output(
                 title=state['results'][numb],
@@ -164,7 +166,8 @@ async def _search(
             await search.finish(outstr)
         except wiki.exceptions.DisambiguationError as msg:
             # * 没有对应页面，但可生成相似结果列表
-            state['results'] = Handle(msg).refer_to_list(max=REFER_MAX)
+            state['results'] = Handle(msg := str(msg)).refer_to_list(
+                max=REFER_MAX)
             out = (
                 '有关结果如下，输入对应标号发起搜索，回复其他字符自动取消:\n' +
                 '\n'.join(

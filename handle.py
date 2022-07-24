@@ -46,7 +46,7 @@ class Handle:
         '''
         将建议列表以列表形式输出,参数max控制返回列表最大长度
         '''
-        ret = self.raw.options
+        ret: list = self.raw.options  # type: ignore
         return ret if (max >= len(ret) or not max) else ret[:max]
 
     def chars_max(self, txt='', max=0) -> str:
@@ -75,7 +75,7 @@ class Cmd_member:
 
         if wiki_list:
             result = "本群wiki记录列表如下：\n" + "\n".join(
-                f"[{wiki.name}]{wiki.api_url[:-8]}"
+                f"[{wiki.name}]{wiki.api_url[:-8]}"  # type: ignore
                 for wiki in wiki_list
             )
         else:
@@ -100,12 +100,12 @@ class Cmd_member:
         """
         wiki_list = Data().get_wiki_list(group_id)
         if wiki_name in (
-            wiki.name
+            wiki.name  # type: ignore
             for wiki in wiki_list
         ):
             for _wiki in wiki_list:
-                if wiki_name == _wiki.name:
-                    return _wiki
+                if wiki_name == _wiki.name:  # type: ignore
+                    return _wiki  # type: ignore
         else:
             # * 不存在对应wiki配置
             return None

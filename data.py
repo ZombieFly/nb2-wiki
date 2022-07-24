@@ -58,7 +58,7 @@ class Data:
         if wiki not in wiki_list:
             wiki_list.append(wiki)
 
-        self.__wiki_list["group"][group_id] = wiki_list
+        self.__wiki_list["group"][group_id] = wiki_list  # type: ignore
 
         self.__dump()
 
@@ -76,9 +76,9 @@ class Data:
         )
 
         if wiki_list:
-            self.__wiki_list["group"][group_id] = wiki_list
+            self.__wiki_list["group"][group_id] = wiki_list  # type: ignore
         else:
-            self.__wiki_list["group"].pop(group_id)
+            self.__wiki_list["group"].pop(group_id)  # type: ignore
 
         self.__dump()
 
