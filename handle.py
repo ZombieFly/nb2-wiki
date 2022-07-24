@@ -1,13 +1,39 @@
 import re
-import json
+from json import dumps
+from json.decoder import JSONDecodeError
+from enum import Enum, unique
 from typing import Dict, Optional
 import traceback
 
 from .data import Data, MWiki
 
 from . import mediawiki as Wiki
+from .mediawiki.exceptions import NoExtractError
 
 from .config import Config
+
+
+@unique
+class Status(Enum):
+    OK = {0: "可生成简介"}
+    SUMMARY_ERROR = {1: "api可用，不可生成简介"}
+    API_ERROR = {2: "api不可用"}
+
+    def get_code(self) -> int:
+        """获取状态码
+
+        Returns:
+            int: 状态码
+        """
+        return list(self.value.keys())[0]
+
+    def get_msg(self) -> str:
+        """获取状态信息
+
+        Returns:
+            str: 状态信息
+        """
+        return list(self.value.values())[0]
 
 
 def url_format(url: str) -> str:
@@ -65,8 +91,26 @@ class Cmd_member:
     """无权限限制命令
     """
     @classmethod
-    async def check_wiki(cls, mwiki: MWiki):
-        pass
+    async def check_wiki(cls, mwiki: MWiki, proxies=dict()) -> Status:
+        """检查wiki api可用性
+
+        Args:
+            mwiki (MWiki): 待检测MWiki对象
+            proxies (dict, optional): 代理设置. Defaults to dict().
+
+        Returns:
+            Status
+        """
+        set_wiki(mwiki, proxies)
+        try:
+            title = await Wiki.random()
+            await Wiki.summary(title[0])
+        except NoExtractError:
+            return Status.SUMMARY_ERROR
+        except JSONDecodeError:
+            return Status.API_ERROR
+        else:
+            return Status.OK
 
     @classmethod
     async def ls(cls, args):
@@ -111,7 +155,7 @@ class Cmd_member:
 
     @classmethod
     async def demo(cls, args: dict):
-        return json.dumps(args)
+        return dumps(args)
 
 
 class Cmd_admin:
@@ -164,14 +208,17 @@ class Cmd_admin:
 
         try:
             # * 判断wiki api可用性
-            set_wiki(mwiki, Config.__annotations__['PROXIES'])
-            query = await Wiki.random()
-            await Wiki.search(query[0])
+            api_status = await Cmd_member.check_wiki(mwiki, Config.__annotations__['PROXIES'])
+            if api_status == Status.OK:
+                pass
+            else:
+                return api_status.get_msg()
+
         except Exception:
             return traceback.format_exc()
-        else:
-            Data().add_wiki(mwiki, args['group_id'])
-            return '记录完成'
+
+        Data().add_wiki(mwiki, args['group_id'])
+        return '记录完成'
 
     @ classmethod
     async def rm(cls, args) -> str:
