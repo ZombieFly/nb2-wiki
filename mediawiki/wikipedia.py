@@ -253,7 +253,13 @@ async def random(pages=1):
     return titles
 
 
-async def summary(title, sentences=0, chars=0, auto_suggest=True, redirect=True) -> list[int, str]:
+async def summary(
+    title,
+    sentences=0,
+    chars=0,
+    auto_suggest=True,
+    redirect=True
+) -> list[int, str]:  # type: ignore
     '''
     页面id与纯文本简介
     Keyword arguments:
@@ -596,7 +602,7 @@ class WikipediaPage(object):
                     'gimlimit': 'max',
                     'prop': 'imageinfo',
                     'iiprop': 'url',
-                })
+                })  # type: ignore
                 if 'imageinfo' in page
             ]
 
@@ -641,7 +647,7 @@ class WikipediaPage(object):
                 for link in self.__continued_query({
                     'prop': 'extlinks',
                     'ellimit': 'max'
-                })
+                })  # type: ignore
             ]
 
         return self._references
@@ -661,7 +667,7 @@ class WikipediaPage(object):
                     'prop': 'links',
                     'plnamespace': 0,
                     'pllimit': 'max'
-                })
+                })  # type: ignore
             ]
 
         return self._links
@@ -678,7 +684,7 @@ class WikipediaPage(object):
                                  for link in self.__continued_query({
                                      'prop': 'categories',
                                      'cllimit': 'max'
-                                 })
+                                 })  # type: ignore
                                  ]]
 
         return self._categories
