@@ -24,7 +24,7 @@ from . import mediawiki as wiki
 
 from .data import MWiki
 
-from .handle import set_wiki, Cmd_admin, Cmd_member, Handle
+from .handle import set_wiki, Cmd_admin, Cmd_member, Handle, select_mwiki
 
 global_config = get_driver().config
 config = Config.parse_obj(global_config)
@@ -221,7 +221,7 @@ async def _cmd(
                 logger.debug(f'[S3]子命令"{to_run}"未找到，尝试从已记录wiki中寻找')
                 # * 不存在对应子命令时，调用seletc_wiki函数，获取可能的对应的wiki配置
                 # 传入MWiki类
-                state['mwiki'] = await Cmd_member.select_mwiki(
+                state['mwiki'] = await select_mwiki(
                     to_run, args['group_id']
                 )
                 if state['mwiki']:

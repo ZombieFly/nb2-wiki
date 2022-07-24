@@ -53,7 +53,55 @@ def set_wiki(mwiki: MWiki, proxies: Dict = dict()):
     return None
 
 
+async def check_wiki(mwiki: MWiki, proxies=dict()) -> Status:
+    """检查wiki api可用性
+
+    Args:
+        mwiki (MWiki): 待检测MWiki对象
+        proxies (dict, optional): 代理设置. Defaults to dict().
+
+    Returns:
+        Status
+    """
+    set_wiki(mwiki, proxies)
+    try:
+        title = await Wiki.random()
+        await Wiki.summary(title[0])
+    except NoExtractError:
+        return Status.SUMMARY_ERROR
+    except JSONDecodeError:
+        return Status.API_ERROR
+    else:
+        return Status.OK
+
+
+async def select_mwiki(wiki_name: str, group_id: int) -> Optional[MWiki]:
+    """
+    获得已记录的MWiki对象
+    不存在时返回None
+
+    Args:
+        wiki_name (str): wiki记录名称
+        group_id (int): 群id
+
+    Returns:
+        MWiki | None
+    """
+    wiki_list = Data().get_wiki_list(group_id)
+    if wiki_name in (
+        wiki.name  # type: ignore
+        for wiki in wiki_list
+    ):
+        for _wiki in wiki_list:
+            if wiki_name == _wiki.name:  # type: ignore
+                return _wiki  # type: ignore
+    else:
+        # * 不存在对应wiki配置
+        return None
+
 # * 文字处理部分
+
+
 class Handle:
     '''
     用以处理简介、搜索结果输出
@@ -90,27 +138,6 @@ class Handle:
 class Cmd_member:
     """无权限限制命令
     """
-    @classmethod
-    async def check_wiki(cls, mwiki: MWiki, proxies=dict()) -> Status:
-        """检查wiki api可用性
-
-        Args:
-            mwiki (MWiki): 待检测MWiki对象
-            proxies (dict, optional): 代理设置. Defaults to dict().
-
-        Returns:
-            Status
-        """
-        set_wiki(mwiki, proxies)
-        try:
-            title = await Wiki.random()
-            await Wiki.summary(title[0])
-        except NoExtractError:
-            return Status.SUMMARY_ERROR
-        except JSONDecodeError:
-            return Status.API_ERROR
-        else:
-            return Status.OK
 
     @classmethod
     async def ls(cls, args):
@@ -125,33 +152,6 @@ class Cmd_member:
             result = "本群wiki记录为空"
 
         return result
-
-    @classmethod
-    async def select_mwiki(
-        cls, wiki_name: str, group_id: int
-    ) -> Optional[MWiki]:
-        """
-        获得已记录的MWiki对象
-        不存在时返回None
-
-        Args:
-            wiki_name (str): wiki记录名称
-            group_id (int): 群id
-
-        Returns:
-            MWiki | None
-        """
-        wiki_list = Data().get_wiki_list(group_id)
-        if wiki_name in (
-            wiki.name  # type: ignore
-            for wiki in wiki_list
-        ):
-            for _wiki in wiki_list:
-                if wiki_name == _wiki.name:  # type: ignore
-                    return _wiki  # type: ignore
-        else:
-            # * 不存在对应wiki配置
-            return None
 
     @classmethod
     async def demo(cls, args: dict):
@@ -208,7 +208,7 @@ class Cmd_admin:
 
         try:
             # * 判断wiki api可用性
-            api_status = await Cmd_member.check_wiki(mwiki, Config.__annotations__['PROXIES'])
+            api_status = await check_wiki(mwiki, Config.__annotations__['PROXIES'])
             if api_status == Status.OK:
                 pass
             else:
