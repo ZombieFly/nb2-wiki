@@ -50,9 +50,11 @@ class Data:
 
     def has_wiki(self, name: str, group_id: int) -> bool:
         return bool(
-            filter(
-                lambda wiki: wiki.name == name,
-                cast(List[MWiki], self.get_wiki_list(group_id))
+            list(
+                filter(
+                    lambda wiki: wiki.name == name,
+                    cast(List[MWiki], self.get_wiki_list(group_id))
+                )
             )
         )
 
@@ -78,12 +80,12 @@ class Data:
 
         Args:
             name (str): wiki记录名
-            group_id (Optional[int], optional): 群号. Defaults to None.
+            group_id (int): 群号
 
         Returns:
             bool: 是否成功删除，返回False即不存在目标wiki
         """
-        if self.has_wiki(name, cast(int, group_id)):
+        if self.has_wiki(name, group_id):
             wiki_list = list(
                 filter(
                     lambda wiki: wiki.name != name,
