@@ -181,6 +181,8 @@ class Cmd_admin:
         # * 阻止注册类属性作为名称
         if args['fn_args'][0] in (dir(cls) and dir(Cmd_member)):
             return f'不被允许注册保留关键字<{args["fn_args"][0]}>作为名称'
+        if Data().has_wiki(args['fn_args'][0], args['group_id']):
+            return '该名称已被注册'
         try:
             fn_args = args['fn_args']
             # 对url进行处理
