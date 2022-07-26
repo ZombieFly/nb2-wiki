@@ -183,6 +183,7 @@ async def _cmd(
 ):
     args = dict()
     args['group_id'] = event.group_id
+    args['config'] = config
     try:
         keywd = keywd.extract_plain_text()
     except AttributeError:
