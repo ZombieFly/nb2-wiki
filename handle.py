@@ -221,6 +221,21 @@ class Cmd_admin:
     """管理员权限命令
     """
     @classmethod
+    async def lsl(cls, args: dict):
+        name = args['fn_args'][0]
+        if Data().has_wiki(name, args['group_id']):
+            wiki_list = Data().get_wiki_list(args['group_id'])
+            tar_wiki = MWiki()
+            for twiki in wiki_list:
+                if cast(MWiki, twiki).name == name:
+                    tar_wiki = cast(MWiki, twiki)
+                    break
+
+            return dumps(tar_wiki.dict())
+        else:
+            return "不存在目标wiki"
+
+    @classmethod
     async def add(cls, args: dict) -> str:
         """#增加记录
 
