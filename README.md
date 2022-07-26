@@ -69,7 +69,9 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
 
 ## 待办
 - [x] add子命令判断wiki api是否可用，以及是否可直接生成简介
+- [ ] 默认UA储存问题
 - [ ] bilibili wiki适配器
-- [ ] add子命令添加的wiki名称已被使用，阻止注册
-- [ ] rm子命令删除时无论是否存在目标wiki都是返回“删除成功”，应当增加wiki存在性判定
+- [x] add子命令添加的wiki名称已被使用，阻止注册
+- [x] rm子命令删除时无论是否存在目标wiki都是返回“删除成功”，应当增加wiki存在性判定
 - [ ] 优化搜索流程，减少请求数，亦或是提高网络I/O利用率
+- [ ] 优化api检查机制
