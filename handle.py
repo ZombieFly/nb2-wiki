@@ -120,7 +120,7 @@ async def check_wiki(mwiki: MWiki, proxies=dict()) -> Status:
     set_wiki(mwiki, proxies)
     try:
         title = await Wiki.random()
-        await Wiki.summary(title[0])
+        await Wiki.summary(title)
     except NoExtractError:
         return Status.SUMMARY_ERROR
     except JSONDecodeError:
