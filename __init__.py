@@ -158,7 +158,7 @@ async def _search(
         except wiki.exceptions.DisambiguationError as msg:
             # * 没有对应页面，但可生成相似结果列表
             state['results'] = Handle.refer_to_list(
-                msg := str(msg), max=REFER_MAX)
+                msg, max=REFER_MAX)  # type: ignore
             out = (
                 '有关结果如下，输入对应标号发起搜索，回复其他字符自动取消:\n' +
                 '\n'.join(

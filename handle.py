@@ -173,7 +173,7 @@ class Handle:
         return re.sub(r"\n\n", r"\n", raw)
 
     @classmethod
-    def refer_to_list(cls, raw: str, max: int = 0) -> list:
+    def refer_to_list(cls, raw: Wiki.exceptions.DisambiguationError, max: int = 0) -> list:
         '''
         将建议列表以列表形式输出,参数max控制返回列表最大长度
         '''
