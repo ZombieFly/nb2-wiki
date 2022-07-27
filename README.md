@@ -52,7 +52,7 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
       - ##### ``.wiki.add <自定义wiki简称> <api地址> <curid地址> <是否使用代理> <UA>``<br>
         相较上一形式，此形式于增加``<UA>``参数，即指定发起请求时使用的UA，内可含空格。一个可用的实例：
         ```
-        .wiki.add moe https://mobile.moegirl.org.cn/api.php https://zh.moegirl.org.cn/index?curid= Mozilla/5.0(Linux;Android12;SM-F9160Build/SP1A.210812.016;wv)AppleWebKit/537.36(KHTML,likeGecko)Version/4.0Chrome/102.0.5005.78MobileSafari/537.36
+        .wiki.add moe https://mobile.moegirl.org.cn/api.php https://zh.moegirl.org.cn/index?curid= Mozilla/5.0 (Linux; Android 12; SM-F9160 Build/SP1A.210812.016; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/102.0.5005.78 Mobile Safari/537.36
         ```
 
 - ##### ``.wiki.rm <自定义wiki简称>``
@@ -60,6 +60,10 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
 
 - ##### ``.wiki.ls``
   列出本群所有已记录wiki。
+
+- ##### ``.wiki.lsl <自定义wiki简称>``
+  以json形式返回目标已记录wiki的完全记录内容
+
 
 - ##### ``.wiki.<自定义wiki简称> <关键词>``
   指定使用一个已记录的wiki发起搜索。一个可能的实例:
@@ -69,7 +73,7 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
 
 ## 待办
 - [x] add子命令判断wiki api是否可用，以及是否可直接生成简介
-- [ ] 默认UA储存问题
+- [x] 默认UA储存问题
 - [ ] bilibili wiki适配器
 - [x] add子命令添加的wiki名称已被使用，阻止注册
 - [x] rm子命令删除时无论是否存在目标wiki都是返回“删除成功”，应当增加wiki存在性判定
