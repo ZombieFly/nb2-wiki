@@ -1,4 +1,3 @@
-from distutils.log import DEBUG
 from typing import Union
 from nonebot import get_driver, on_command
 from nonebot.adapters import Bot, Message
@@ -15,16 +14,17 @@ from nonebot.log import logger
 
 from .mediawiki.exceptions import NoExtractError
 
-if get_driver().config.log_level == DEBUG:
-    import traceback
-
-from .config import Config
+import traceback
 
 from . import mediawiki as wiki
 
 from .data import MWiki
 
-from .handle import set_wiki, Cmd_admin, Cmd_member, Handle, select_mwiki
+from .SubCmd.utils import select_mwiki, set_wiki
+from .SubCmd import admin, member
+from . import handle
+
+from .config import Config
 
 global_config = get_driver().config
 config = Config.parse_obj(global_config)
@@ -92,7 +92,7 @@ async def output(
     except wiki.ApiReturnError:
         return reply_out(msg_id, 'api多次返回异常，请检查api状态或稍后重试')
 
-    _summary = Handle.nn_to_n(Handle().chars_max(
+    _summary = handle.nn_to_n(handle.chars_max(
         _summary, max=200))  # type: ignore
     out = (
         (f'「{title}」\n' if has_title else '')
@@ -160,8 +160,7 @@ async def _search(
             await search.finish(outstr)
         except wiki.exceptions.DisambiguationError as DE:
             # * 没有对应页面，但可生成相似结果列表
-            state['results'] = Handle.refer_to_list(
-                DE, max=REFER_MAX)
+            state['results'] = handle.refer_to_list(raw=DE, max=REFER_MAX)
             out = (
                 '有关结果如下，输入对应标号发起搜索，回复其他字符自动取消:\n' +
                 '\n'.join(
@@ -195,6 +194,7 @@ async def _cmd(
         if keywd[0] in get_driver().config.command_start:
             # 解析出子命令与参数
             to_run, *args['fn_args'] = keywd[1:].split()
+            logger.debug(f"[S0]主参数为<{to_run}>，追加参数为<{str(args)}>")
             try:
                 # * 尝试执行子命令
                 try:
@@ -202,9 +202,10 @@ async def _cmd(
                     await cmd.send(
                         reply_out(
                             event.message_id,
-                            await getattr(Cmd_member, to_run)(args)
+                            await getattr(member, to_run)(args)
                         )
                     )
+                    logger.debug(f"[S1M]找到并执行了普通权限命令{to_run}")
                 except AttributeError as err:
                     logger.debug(
                         f'[S1]执行普通权限命令触发异常<{repr(err)}>，逻辑为未寻找到普通权限命令"{to_run}"'
@@ -214,13 +215,17 @@ async def _cmd(
                         await cmd.send(
                             reply_out(
                                 event.message_id,
-                                await getattr(Cmd_admin, to_run)(args)
+                                await getattr(admin, to_run)(args)
                             )
                         )
                         logger.debug(f"[S2]找到并执行了管理员级命令{to_run}")
                     else:
                         # * 普通成员调用不存在的平级命令或是管理员权限命令
                         raise AttributeError
+                except Exception:
+                    logger.debug(
+                        f'[S2M]触发意料外的异常:\n{traceback.format_exc()}')
+                    await cmd.finish(reply_out(event.message_id, traceback.format_exc()))
             except AttributeError:
                 logger.debug(f'[S3]子命令"{to_run}"未找到，尝试从已记录wiki中寻找')
                 # * 不存在对应子命令时，调用seletc_wiki函数，获取可能的对应的wiki配置
@@ -246,6 +251,5 @@ async def _cmd(
                         )
                     )
             except Exception:
-                if get_driver().config.log_level == DEBUG:
-                    logger.debug(f'[S6]触发意料外的异常:\n{traceback.format_exc()}')
-                    await cmd.finish(reply_out(event.message_id, traceback.format_exc()))
+                logger.debug(f'[S6]触发意料外的异常:\n{traceback.format_exc()}')
+                await cmd.finish(reply_out(event.message_id, traceback.format_exc()))
