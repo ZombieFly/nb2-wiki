@@ -101,9 +101,6 @@ def args2mwiki(args: dict, raw_mwiki: MWiki) -> MWiki:
     except Exception as err:
         raise err
 
-    print(target.api_url)
-    print(target.curid_url)
-    print(target.user_agent)
     return target
 
 

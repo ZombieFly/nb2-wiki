@@ -155,10 +155,10 @@ async def _search(
                 msg_id=msg_id,
             )
             await search.finish(outstr)
-        except wiki.exceptions.DisambiguationError as msg:
+        except wiki.exceptions.DisambiguationError as DE:
             # * 没有对应页面，但可生成相似结果列表
             state['results'] = Handle.refer_to_list(
-                msg, max=REFER_MAX)  # type: ignore
+                DE, max=REFER_MAX)
             out = (
                 '有关结果如下，输入对应标号发起搜索，回复其他字符自动取消:\n' +
                 '\n'.join(
