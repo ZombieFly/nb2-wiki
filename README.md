@@ -8,6 +8,8 @@
 ## 关于
 本项目作为[AXbot/mws.py](https://github.com/ZombieFly/AXbot/blob/master/mws.py)的重构nonebot2适配版，代码逻辑已然完全不同，并且功能得到了更大的拓展，但仍旨在能于即时通讯平台中快速引用wiki条目，让由各大wiki中所整合的知识为更多人所用。
 
+该项目目前仍属于较高频率代码变更状态，未发布正式版，可能并不合适立即投入生产环境，请务必于测试环境中进行调试后再投入生产环境。
+
 ## 安装
 克隆此仓库至nonebot生成的目录中对应的存放插件的文件夹内。
 ```bash
@@ -15,12 +17,12 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
 ```
 
 ## 配置
-可配置项存放于``config.py``，可按需求更改，或是直接于``__init__.py``内声明全局变量
-- ``PROXIES``(dict)：代理地址，默认值为``{'All://':'http://127.0.0.1:10809'}``，当所使用的MWiki的``need_proxy``为``True``时使用；
+可配置项存放于``config.py``内，可按需求更改 ~~，或是直接于``__init__.py``内声明全局变量~~（现handle类内仅会使用config.py内的配置）
+- ``PROXIES``(dict)：代理地址，默认值为``{}``，当所使用的MWiki的``need_proxy``为``True``时使用；
 
 - ``REFER_MAX``(int)：相关搜索结果最大返回值，默认值为``10``，；
 
-- ``RAW_MWIKI``(MWiki): 默认MWiki对象，在直接使用``/wiki <关键词>``时会使用此wiki记录；
+- ``RAW_MWIKI``(MWiki): 默认MWiki对象，在直接使用``/wiki <关键词>``命令时会使用此wiki记录；
 
 - ``CMD_START``(list)：命令触发头，默认值为``['wiki', '维基']``
 
@@ -47,10 +49,10 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
         .wiki.add moe https://mobile.moegirl.org.cn/api.php https://zh.moegirl.org.cn/index?curid=
         ```
       - ##### ``.wiki.add <自定义wiki简称> <api地址> <curid地址> <是否使用代理>``<br>
-        相较上一形式，此形式于增加``<是否使用代理>``参数，可选值为``1``或``0``，分别决定是否使用由``PROXIES``指定的代理地址；
+        相较上一形式，此形式增加``<是否使用代理>``参数，可选值为``1``或``0``，分别决定是否使用由``PROXIES``指定的代理地址；
       
       - ##### ``.wiki.add <自定义wiki简称> <api地址> <curid地址> <是否使用代理> <UA>``<br>
-        相较上一形式，此形式于增加``<UA>``参数，即指定发起请求时使用的UA，内可含空格。一个可用的实例：
+        相较上一形式，此形式增加``<UA>``参数，即指定发起请求时使用的UA，内可含空格。一个可用的实例：
         ```
         .wiki.add moe https://mobile.moegirl.org.cn/api.php https://zh.moegirl.org.cn/index?curid= Mozilla/5.0 (Linux; Android 12; SM-F9160 Build/SP1A.210812.016; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/102.0.5005.78 Mobile Safari/537.36
         ```
