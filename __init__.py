@@ -33,6 +33,7 @@ PROXIES = config.PROXIES
 REFER_MAX = config.REFER_MAX
 RAW_MWIKI = config.RAW_MWIKI
 CMD_START = config.CMD_START
+wiki.set_retry_times(config.RETRY_TIMES)
 
 
 cmd = on_command(CMD_START[0], aliases=set(CMD_START[1:]), permission=GROUP)
@@ -88,6 +89,8 @@ async def output(
         )
     except NoExtractError:
         return reply_out(msg_id, '目标wiki不支持extract')
+    except wiki.ApiReturnError:
+        return reply_out(msg_id, 'api多次返回异常，请检查api状态或稍后重试')
 
     _summary = Handle.nn_to_n(Handle().chars_max(
         _summary, max=200))  # type: ignore
