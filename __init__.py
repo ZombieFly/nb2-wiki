@@ -33,6 +33,7 @@ PROXIES = config.PROXIES
 REFER_MAX = config.REFER_MAX
 RAW_MWIKI = config.RAW_MWIKI
 CMD_START = config.CMD_START
+wiki.set_retry_times(config.RETRY_TIMES)
 
 
 cmd = on_command(CMD_START[0], aliases=set(CMD_START[1:]), permission=GROUP)

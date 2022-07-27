@@ -93,8 +93,8 @@ class NoExtractError(WikipediaException):
 class ApiReturnError(WikipediaException):
     """api返回报错"""
 
-    def __init__(self,):
-        self.message = "在连续尝试两次请求后，api方面仍返回错误"
+    def __init__(self, times):
+        self.message = f"在连续尝试{times}次请求后，api方面仍返回错误"
 
     def __str__(self):
         return repr(self.message)
