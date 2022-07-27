@@ -807,14 +807,14 @@ async def _wiki_request(params):
         time.sleep(int(wait_time.total_seconds()))
 
     global RETRY_TIMES
-    for times in range(RETRY_TIMES + 1):
+    for times in range(RETRY_TIMES):
         async with httpx.AsyncClient(proxies=PROXIES, timeout=None) as client:
             r = await client.get(API_URL, params=params, headers=headers)
         ret = r.json()
 
         if 'error' in ret:
             if ' a temporary problem' in ret['error']['info']:
-                print(f'第{times+1}次重试')
+                pass
         else:
             if RATE_LIMIT:
                 RATE_LIMIT_LAST_CALL = datetime.now()
