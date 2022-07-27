@@ -10,7 +10,7 @@ from httpx import ConnectError
 from .data import Data, MWiki
 
 from . import mediawiki as Wiki
-from .mediawiki.exceptions import NoExtractError
+from .mediawiki.exceptions import ApiReturnError, NoExtractError
 
 
 @unique
@@ -18,6 +18,7 @@ class Status(Enum):
     OK = {"200": "可生成简介"}
     SUMMARY_ERROR = {"204": "api可用，不可生成简介"}
     API_ERROR = {"400": "api不可用"}
+    API_RETURN_ERROR = {"002": "重试预设次数后，api依然返回错误，请检查api能否正常工作"}
     DOMAIN_ERROR = {"000": "域名解析异常，请检查输入是否正确"}
     URL_ERROR = {"403": "链接不可达，请检查输入"}
     PROXY_ERROR = {"001": "代理格式有误"}
@@ -126,6 +127,8 @@ async def check_wiki(mwiki: MWiki, proxies=dict()) -> Status:
         return Status.DOMAIN_ERROR
     except AttributeError:
         return Status.PROXY_ERROR
+    except ApiReturnError:
+        return Status.API_RETURN_ERROR
     except Exception as err:
         raise err
     else:

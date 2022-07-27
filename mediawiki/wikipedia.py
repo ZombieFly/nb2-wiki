@@ -8,6 +8,7 @@ from decimal import Decimal
 import re
 
 from .exceptions import (
+    ApiReturnError,
     NoExtractError,
     PageError,
     DisambiguationError,
@@ -25,6 +26,7 @@ RATE_LIMIT = False
 RATE_LIMIT_MIN_WAIT = None
 RATE_LIMIT_LAST_CALL = None
 USER_AGENT = 'wikipedia (https://github.com/goldsmith/Wikipedia/)'
+RETRY_TIMES = 2
 
 
 def set_lang(prefix):
@@ -65,6 +67,13 @@ def set_proxies(proxies):
     '''
     global PROXIES
     PROXIES = proxies
+
+
+def set_retry_times(times):
+    """设置api返回错误重试次数
+    """
+    global RETRY_TIMES
+    RETRY_TIMES = times
 
 
 def set_user_agent(user_agent_string):
@@ -796,10 +805,19 @@ async def _wiki_request(params):
         wait_time = (RATE_LIMIT_LAST_CALL +
                      RATE_LIMIT_MIN_WAIT) - datetime.now()
         time.sleep(int(wait_time.total_seconds()))
-    async with httpx.AsyncClient(proxies=PROXIES, timeout=None) as client:
-        r = await client.get(API_URL, params=params, headers=headers)
 
-    if RATE_LIMIT:
-        RATE_LIMIT_LAST_CALL = datetime.now()
+    global RETRY_TIMES
+    for times in range(RETRY_TIMES + 1):
+        async with httpx.AsyncClient(proxies=PROXIES, timeout=None) as client:
+            r = await client.get(API_URL, params=params, headers=headers)
+        ret = r.json()
 
-    return r.json()
+        if 'error' in ret:
+            if ' a temporary problem' in ret['error']['info']:
+                print(f'第{times+1}次重试')
+        else:
+            if RATE_LIMIT:
+                RATE_LIMIT_LAST_CALL = datetime.now()
+            return ret
+
+    raise ApiReturnError(RETRY_TIMES)
