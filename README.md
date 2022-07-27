@@ -20,11 +20,13 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
 可配置项存放于``config.py``内，可按需求更改 ~~，或是直接于``__init__.py``内声明全局变量~~（现handle类内仅会使用config.py内的配置）
 - ``PROXIES``(dict)：代理地址，默认值为``{}``，当所使用的MWiki的``need_proxy``为``True``时使用；
 
-- ``REFER_MAX``(int)：相关搜索结果最大返回值，默认值为``10``，；
+- ``REFER_MAX``(int)：相关搜索结果最大返回值，默认值为``10``；
+
+- ``RETRY_TIMES``(int)：api返回错误时最大重试次数，默认值为``1``；
 
 - ``RAW_MWIKI``(MWiki): 默认MWiki对象，在直接使用``/wiki <关键词>``命令时会使用此wiki记录；
 
-- ``CMD_START``(list)：命令触发头，默认值为``['wiki', '维基']``
+- ``CMD_START``(list)：命令触发头，默认值为``['wiki', '维基']``。
 
 ## 使用
 以下命令实例中，假定bot配置的命令头为``.``、``/``，请依据实际情况替换。

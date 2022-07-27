@@ -5,6 +5,8 @@ from .data import MWiki
 class Config(BaseSettings):
     # 代理地址。如果完全不会使用代理地址可忽略此配置
     PROXIES: dict = {}
+    # 最大重试请求数目（api返回错误时）
+    RETRY_TIMES: int = 1
     # 相关结果最大返回数
     REFER_MAX: int = 10
     # 默认MWiki
