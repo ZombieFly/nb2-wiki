@@ -89,6 +89,8 @@ async def output(
         )
     except NoExtractError:
         return reply_out(msg_id, '目标wiki不支持extract')
+    except wiki.ApiReturnError:
+        return reply_out(msg_id, 'api多次返回异常，请检查api状态或稍后重试')
 
     _summary = Handle.nn_to_n(Handle().chars_max(
         _summary, max=200))  # type: ignore
