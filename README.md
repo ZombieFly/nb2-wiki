@@ -46,9 +46,9 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
         ```
     - 除``<自定义wiki简称>``与``<api地址>``两个必选参数外，此子命令仍包含多种可选形式：
       - ##### ``.wiki.add <自定义wiki简称> <api地址> <curid地址>``<br>
-        ``api地址``应形如``https://minecraft.fandom.com/zh/api.php``，``<curid地址>``应形如``http://minecraft.fandom.com/zh/index.php?curid=``，请于上文中的最简命令相区分，此处的两地址必须为完整地址，包括http协议也不可省略。一个可用的实例：
+        ``api地址``应形如``https://minecraft.fandom.com/zh/api.php``，``<curid地址>``应形如``http://minecraft.fandom.com/zh/index.php?curid=``，请于上文中的最简命令相区分，此处的两地址必须为完整地址(http协议可省略)。一个可用的实例：
         ```
-        .wiki.add moe https://mobile.moegirl.org.cn/api.php https://zh.moegirl.org.cn/index?curid=
+        .wiki.add moe https://zh.moegirl.org.cn/api.php https://zh.moegirl.org.cn/index?curid=
         ```
       - ##### ``.wiki.add <自定义wiki简称> <api地址> <curid地址> <是否使用代理>``<br>
         相较上一形式，此形式增加``<是否使用代理>``参数，可选值为``1``或``0``，分别决定是否使用由``PROXIES``指定的代理地址；
@@ -56,7 +56,7 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
       - ##### ``.wiki.add <自定义wiki简称> <api地址> <curid地址> <是否使用代理> <UA>``<br>
         相较上一形式，此形式增加``<UA>``参数，即指定发起请求时使用的UA，内可含空格。一个可用的实例：
         ```
-        .wiki.add moe https://mobile.moegirl.org.cn/api.php https://zh.moegirl.org.cn/index?curid= Mozilla/5.0 (Linux; Android 12; SM-F9160 Build/SP1A.210812.016; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/102.0.5005.78 Mobile Safari/537.36
+        .wiki.add moe https://zh.moegirl.org.cn/api.php https://zh.moegirl.org.cn/index?curid= 0 Mozilla/5.0 (Linux; Android 12; SM-F9160 Build/SP1A.210812.016; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/102.0.5005.78 Mobile Safari/537.36
         ```
 
 - ##### ``.wiki.rm <自定义wiki简称>``
