@@ -1,7 +1,6 @@
 """无权限限制命令
 """
 
-from json import dumps
 
 from ..data import Data
 
@@ -21,4 +20,4 @@ async def ls(args: dict) -> str:
 
 
 async def demo(args: dict) -> str:
-    return dumps(args)
+    return str(args)
