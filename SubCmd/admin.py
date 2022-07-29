@@ -11,18 +11,24 @@ from . import admin, member
 
 
 async def lsl(args: dict):
-    name = args['fn_args'][0]
-    if Data().has_wiki(name, args['group_id']):
-        wiki_list = Data().get_wiki_list(args['group_id'])
-        tar_wiki = MWiki()
-        for twiki in wiki_list:
-            if cast(MWiki, twiki).name == name:
-                tar_wiki = cast(MWiki, twiki)
-                break
+    if len(args['fn_args']):
+        name = args['fn_args'][0]
 
-        return dumps(tar_wiki.dict())
+        if Data().has_wiki(name, args['group_id']):
+            wiki_list = Data().get_wiki_list(args['group_id'])
+            tar_wiki = MWiki()
+            for twiki in wiki_list:
+
+                if cast(MWiki, twiki).name == name:
+                    tar_wiki = cast(MWiki, twiki)
+                    break
+
+            return dumps(tar_wiki.dict())
+        else:
+            return "不存在目标wiki"
+
     else:
-        return "不存在目标wiki"
+        return dumps(args['config'].RAW_MWIKI)
 
 
 async def add(args: dict) -> str:
