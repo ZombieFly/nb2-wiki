@@ -66,7 +66,7 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
   列出本群所有已记录wiki。
 
 - ##### ``.wiki.lsl <自定义wiki简称>``
-  以json形式返回目标已记录wiki的完全记录内容
+  以json形式返回目标已记录wiki的完全记录内容，当不追加参数指定wiki时将返回配置文件中的`RAW_MWIKI`
 
 
 - ##### ``.wiki.<自定义wiki简称> <关键词>``
