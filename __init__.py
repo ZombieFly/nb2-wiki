@@ -1,35 +1,31 @@
-from typing import Union
+from .config import Config
 from nonebot import get_driver, on_command
-from nonebot.adapters import Bot, Message
+from nonebot.adapters import Bot
 from nonebot.params import CommandArg
 from nonebot.typing import T_State
 from nonebot.adapters.onebot.v11 import (
     GroupMessageEvent,
-    MessageSegment,
     MessageEvent
 )
 from nonebot.exception import RejectedException, FinishedException
 from nonebot.adapters.onebot.v11.permission import GROUP
 from nonebot.log import logger
 
-from .mediawiki.exceptions import NoExtractError
 
 import traceback
 
 from . import mediawiki as wiki
 
-from .data import MWiki
 
-from .SubCmd.utils import select_mwiki, set_wiki
+from .SubCmd.utils import select_mwiki
 from .SubCmd import admin, member
 from . import handle
+from.utils import output, reply_out
 
-from .config import Config
 
 global_config = get_driver().config
 config = Config.parse_obj(global_config)
 
-PROXIES = config.PROXIES
 REFER_MAX = config.REFER_MAX
 RAW_MWIKI = config.RAW_MWIKI
 CMD_START = config.CMD_START
@@ -43,63 +39,6 @@ search = on_command(CMD_START[0], aliases=set(CMD_START[1:]))
 
 ###################################################################
 
-
-def reply_out(msg_id: int, output: str) -> Message:
-    """给消息包装上“回复”
-
-    Args:
-        msg_id (int): 所要回复的消息id
-        output (str): 所要包装的消息原文
-
-    Returns:
-        Message
-    """
-    return MessageSegment.reply(id_=msg_id) + MessageSegment.text(output)
-
-
-# TODO
-# ! 目前重定向可能会出现完全不相干的结果返回
-async def output(
-    title: str,
-    mwiki: MWiki = RAW_MWIKI,
-    msg_id: int = int(),
-    auto_suggest=True,
-    redirect=True,
-    has_title=False,
-) -> Union[str, Message]:
-    """将输入的标题转化为格式化的消息
-
-    Args:
-        title (str): 页面标题
-        mwiki (MWiki): MWik对象
-        msg_id (int): 所“回复”的消息id Defaults to int().
-        auto_suggest (bool, optional): 是否启用自动建议 Defaults to True.
-        redirect (bool, optional): 是否接受自动重定向 Defaults to True.
-        has_title (bool, optional): 消息内是否再次注明标题 Defaults to False.
-
-    Returns:
-        Union[str, Message]
-    """
-    # 大型赋值现场
-    set_wiki(mwiki, PROXIES)
-
-    try:
-        curid, _summary = await wiki.summary(
-            title, auto_suggest=auto_suggest, redirect=redirect
-        )
-    except NoExtractError:
-        return reply_out(msg_id, '目标wiki不支持extract')
-    except wiki.ApiReturnError:
-        return reply_out(msg_id, 'api多次返回异常，请检查api状态或稍后重试')
-
-    _summary = handle.nn_to_n(handle.chars_max(
-        _summary, max=200))  # type: ignore
-    out = (
-        (f'「{title}」\n' if has_title else '')
-        + f'{wiki.get_curid_url()}{curid}\n'
-        + f'{_summary}'
-    )
-    return out if not msg_id else reply_out(msg_id, out)
 
 ###################################################################
 
@@ -186,6 +125,7 @@ async def _cmd(
     args = dict()
     args['group_id'] = event.group_id
     args['config'] = config
+
     try:
         keywd = keywd.extract_plain_text()
     except AttributeError:

@@ -56,7 +56,7 @@ def url_format(url: str, need_slash=True) -> str:
     return url
 
 
-def set_wiki(mwiki: MWiki, proxies: dict = dict()):
+def set_wiki(mwiki: MWiki, proxies: dict[str, str] = dict()):
     Wiki.set_api_url(mwiki.api_url)
     Wiki.set_curid_url(mwiki.curid_url)
     Wiki.set_user_agent(mwiki.user_agent)
@@ -68,7 +68,8 @@ def args2mwiki(args: dict, raw_mwiki: MWiki) -> MWiki:
     """将以列表形式传入的参数，解析为MWiki对象返回
 
     Args:
-        args (list): 被切分的原始参数
+        args (list): 参数
+        raw_mwiki (MWIKI): 默认MWiki（缺省填充）
 
     Returns:
         MWiki: MWiki对象
@@ -97,6 +98,7 @@ def args2mwiki(args: dict, raw_mwiki: MWiki) -> MWiki:
         target.user_agent = " ".join(list(_it))
 
     except StopIteration:
+        # 迭代器终止退出
         pass
     except Exception as err:
         raise err
@@ -104,12 +106,12 @@ def args2mwiki(args: dict, raw_mwiki: MWiki) -> MWiki:
     return target
 
 
-async def check_wiki(mwiki: MWiki, proxies=dict()) -> Status:
+async def check_wiki(mwiki: MWiki, proxies: dict[str, str] = dict()) -> Status:
     """检查wiki api可用性
 
     Args:
         mwiki (MWiki): 待检测MWiki对象
-        proxies (dict, optional): 代理设置. Defaults to dict().
+        proxies (dict[str, str], optional): 代理设置. Defaults to dict().
 
     Returns:
         Status
