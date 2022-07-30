@@ -14,15 +14,21 @@ def nn_to_n(raw: str) -> str:
     return re.sub(r"\n\n", r"\n", raw)
 
 
-def refer_to_list(raw: Wiki.exceptions.DisambiguationError, max: int = 0) -> list:
-    '''
-    将建议列表以列表形式输出,参数max控制返回列表最大长度
-    '''
-    ret: list = raw.options  # type: ignore
+def refer_to_list(raw: Wiki.exceptions.DisambiguationError, max: int = 10) -> list[str]:
+    """将建议列表以列表形式输出,参数max控制返回列表最大长度
+
+    Args:
+        raw (Wiki.exceptions.DisambiguationError): DisambiguationError类
+        max (int, optional): 列表最大长度. Defaults to 10.
+
+    Returns:
+        list: 结果列表
+    """
+    ret: list = raw.options
     return ret if (max >= len(ret) or not max) else ret[:max]
 
 
-def chars_max(raw: str, txt='', max=0) -> str:
+def chars_max(raw: str, txt=str(), max=0) -> str:
     '''
     控制输入文本最大字数,并在末尾追加省略信息
     '''
