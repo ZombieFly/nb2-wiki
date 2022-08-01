@@ -37,8 +37,6 @@ cmd = on_command(CMD_START[0], aliases=set(CMD_START[1:]), permission=GROUP)
 CMD_START = [i + ' ' for i in CMD_START]
 search = on_command(CMD_START[0], aliases=set(CMD_START[1:]))
 
-###################################################################
-
 
 ###################################################################
 
