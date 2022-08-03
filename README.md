@@ -17,7 +17,7 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
 ```
 
 ## 配置
-可配置项存放于``config.py``内，可按需求更改 ~~，或是直接于``__init__.py``内声明全局变量~~（现handle类内仅会使用config.py内的配置）
+可配置项存放于``config.py``内，可按需求更改 ~~，或是直接于``__init__.py``内声明全局变量~~（现仅从nb获得配置）
 - ``PROXIES``(dict)：代理地址，默认值为``{}``，当所使用的MWiki的``need_proxy``为``True``时使用；
 
 - ``REFER_MAX``(int)：相关搜索结果最大返回值，默认值为``10``；
@@ -62,18 +62,18 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
 - ##### ``.wiki.rm <自定义wiki简称>``
   从本群记录中移除指定已记录wiki。
 
+- ##### ``.wiki.<自定义wiki简称> <关键词>``
+  指定使用一个已记录的wiki发起搜索。一个可能的实例:
+  ```
+  .wiki.moe 别当欧尼酱了
+  ```
+
 - ##### ``.wiki.ls``
   列出本群所有已记录wiki。
 
 - ##### ``.wiki.lsl <自定义wiki简称>``
   以json形式返回目标已记录wiki的完全记录内容，当不追加参数指定wiki时将返回配置文件中的`RAW_MWIKI`
 
-
-- ##### ``.wiki.<自定义wiki简称> <关键词>``
-  指定使用一个已记录的wiki发起搜索。一个可能的实例:
-  ```
-  .wiki.moe 别当欧尼酱了
-  ```
 
 ## 待办
 - [x] add子命令判断wiki api是否可用，以及是否可直接生成简介
