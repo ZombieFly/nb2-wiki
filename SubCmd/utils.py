@@ -1,5 +1,3 @@
-
-
 from enum import unique, Enum
 from json import JSONDecodeError
 from typing import Optional, cast
