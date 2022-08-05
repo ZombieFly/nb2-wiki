@@ -72,6 +72,8 @@ async def output(
         return reply_out(msg_id, '目标wiki不支持生成简介')
     except wiki.ApiReturnError:
         return reply_out(msg_id, 'api多次返回异常，请检查api状态或稍后重试')
+    except wiki.PageError:
+        return reply_out(msg_id, '目标页面不存在')
 
     _summary = handle.nn_to_n(handle.chars_max(
         _summary, max=200))  # type: ignore
