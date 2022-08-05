@@ -9,7 +9,6 @@ import re
 
 from .exceptions import (
     ApiReturnError,
-    NoExtractError,
     PageError,
     DisambiguationError,
     RedirectError,
@@ -304,26 +303,23 @@ async def summary(
         summary = (request['query']['pages'][pageid]['extract']).strip()
     except KeyError:
 
-        try:
-            # bili wiki解析
-            global USER_AGENT
+        # bili wiki解析
+        global USER_AGENT
 
-            headers = {
-                'User-Agent': USER_AGENT
-            }
+        headers = {
+            'User-Agent': USER_AGENT
+        }
 
-            async with httpx.AsyncClient(proxies=PROXIES, timeout=None) as client:
-                r = await client.get(page_info.url, headers=headers)
+        async with httpx.AsyncClient(proxies=PROXIES, timeout=None) as client:
+            r = await client.get(page_info.url, headers=headers)
 
-            r = r.text
+        r = r.text
 
+        summary = re.sub(r"</?(.+?)>", "", ''.join(re.compile(
+            r'<p><b>(.*?)\n<p>\n<div').findall(r)))
+        if summary == '':
             summary = re.sub(r"</?(.+?)>", "", ''.join(re.compile(
-                r'<p><b>(.*?)\n<p>\n<div').findall(r)))
-            if summary == '':
-                summary = re.sub(r"</?(.+?)>", "", ''.join(re.compile(
-                    r'<p><b>(.*?)\n</p>').findall(r)))
-        except Exception:
-            raise NoExtractError()
+                r'<p><b>(.*?)\n</p>').findall(r)))
 
     return [pageid, summary]  # type: ignore
 
