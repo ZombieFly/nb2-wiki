@@ -267,8 +267,7 @@ async def summary(
     sentences=0,
     chars=0,
     auto_suggest=True,
-    redirect=True,
-    engine='wikiAPI'
+    redirect=True
 ) -> list[int, str]:  # type: ignore
     '''
     页面id与纯文本简介
@@ -280,56 +279,56 @@ async def summary(
     * redirect - allow redirection without raising RedirectError
     '''
 
-    class Engine:
+    # 通过mediawiki api 获取简介
+    # use auto_suggest and redirect to get the correct article
+    # also, use page's error checking to raise DisambiguationError if necessary
+    page_info: WikipediaPage = await page(title, auto_suggest=auto_suggest, redirect=redirect)
+    title = page_info.title
+    pageid: int = page_info.pageid
 
-        async def wikiAPI(self,
-                          title,
-                          sentences=0,
-                          chars=0,
-                          auto_suggest=True,
-                          redirect=True
-                          ) -> list[int, str]:  # type: ignore
-            # 通过mediawiki api 获取简介
-            # use auto_suggest and redirect to get the correct article
-            # also, use page's error checking to raise DisambiguationError if necessary
-            page_info = await page(title, auto_suggest=auto_suggest, redirect=redirect)
-            title = page_info.title
-            pageid: int = page_info.pageid
+    query_params = {
+        'prop': 'extracts',
+        'explaintext': '',
+        'titles': title,
 
-            query_params = {
-                'prop': 'extracts',
-                'explaintext': '',
-                'titles': title,
+    }
 
+    if sentences:
+        query_params['exsentences'] = sentences
+    elif chars:
+        query_params['exchars'] = chars
+    else:
+        query_params['exintro'] = ''
+    request = await _wiki_request(query_params)
+    try:
+        summary = (request['query']['pages'][pageid]['extract']).strip()
+    except KeyError:
+
+        try:
+            # bili wiki解析
+            global USER_AGENT
+
+            headers = {
+                'User-Agent': USER_AGENT
             }
 
-            if sentences:
-                query_params['exsentences'] = sentences
-            elif chars:
-                query_params['exchars'] = chars
-            else:
-                query_params['exintro'] = ''
-            request = await _wiki_request(query_params)
-            try:
-                summary = request['query']['pages'][pageid]['extract']
-            except KeyError:
-                raise NoExtractError()
+            async with httpx.AsyncClient(proxies=PROXIES, timeout=None) as client:
+                r = await client.get(page_info.url, headers=headers)
 
-            return [pageid, summary.strip()]
+            r = r.text
 
-    pageid, _summary = await getattr(Engine, engine)(Engine,
-                                                     title,
-                                                     sentences,
-                                                     chars,
-                                                     auto_suggest,
-                                                     redirect)
-#  url = request['query']['pages'][pageid]['fullurl']
+            summary = re.sub(r"</?(.+?)>", "", ''.join(re.compile(
+                r'<p><b>(.*?)\n<p>\n<div').findall(r)))
+            if summary == '':
+                summary = re.sub(r"</?(.+?)>", "", ''.join(re.compile(
+                    r'<p><b>(.*?)\n</p>').findall(r)))
+        except Exception:
+            raise NoExtractError()
 
-# return [url, summary]
-    return [pageid, _summary]
+    return [pageid, summary]  # type: ignore
 
 
-async def page(title=None, pageid=None, auto_suggest=True, redirect=True, preload=False):
+async def page(title=None, pageid=None, auto_suggest=True, redirect=True, preload=False) -> 'WikipediaPage':
     '''
     Get a WikipediaPage object for the page with title `title` or the pageid
     `pageid` (mutually exclusive).
