@@ -69,7 +69,7 @@ async def output(
         )
 
     except NoExtractError:
-        return reply_out(msg_id, '目标wiki不支持extract')
+        return reply_out(msg_id, '目标wiki不支持生成简介')
     except wiki.ApiReturnError:
         return reply_out(msg_id, 'api多次返回异常，请检查api状态或稍后重试')
 
