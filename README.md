@@ -37,32 +37,22 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
 /wiki 绵羊
 ```
 
-- ##### ``/wiki.add <自定义wiki简称> <wiki地址>``<br>
-    - 其中，``wiki地址``应为``/api.php``或``/index.php?curid=``前部分，链接开头的http协议可省略，（如``minecraft.fandom.com/zh/``）。当需要使用的api与curid链接前部分不相同时，应采用下文的可选形式分开指定;
+- ##### ``/wiki.add <自定义wiki简称> <wiki地址> <-d/D （可选）>``<br>
+    - 其中，``wiki地址``应为``/api.php``或``/index.php?curid=``前部分，链接开头的http协议可省略，（如``minecraft.fandom.com/zh/``）。当需要使用的api与curid链接前部分不相同时，可在记录后，使用``set``子命令进行修改;
     - 此外，命令中两处的``/``、``.``可替换为**任一被定义的命令头**，例如在本文档假设的环境中，``.wiki/add``、``/wiki/add``等的皆可触发此子命令，下文将不再赘述此特征；
+    - 末尾可选参数 ``-D`` 或 ``-d``，添加后，将跳过wiki api可用性检查，直接记录wiki。
     - 一个可用的实例：
         ```
-        .wiki.add mc minecraft.fandom.com/zh/
-        ```
-    - 除``<自定义wiki简称>``与``<api地址>``两个必选参数外，此子命令仍包含多种可选形式：
-      - ##### ``.wiki.add <自定义wiki简称> <api地址> <curid地址>``<br>
-        ``api地址``应形如``https://minecraft.fandom.com/zh/api.php``，``<curid地址>``应形如``http://minecraft.fandom.com/zh/index.php?curid=``，请于上文中的最简命令相区分，此处的两地址必须为完整地址(http协议可省略)。一个可用的实例：
-        ```
-        .wiki.add moe https://zh.moegirl.org.cn/api.php https://zh.moegirl.org.cn/index?curid=
-        ```
-      - ##### ``.wiki.add <自定义wiki简称> <api地址> <curid地址> <是否使用代理>``<br>
-        相较上一形式，此形式增加``<是否使用代理>``参数，可选值为``1``或``0``，分别决定是否使用由``PROXIES``指定的代理地址；
-      
-      - ##### ``.wiki.add <自定义wiki简称> <api地址> <curid地址> <是否使用代理> <UA>``<br>
-        相较上一形式，此形式增加``<UA>``参数，即指定发起请求时使用的UA，内可含空格。一个可用的实例：
-        ```
-        .wiki.add moe https://zh.moegirl.org.cn/api.php https://zh.moegirl.org.cn/index?curid= 0 Mozilla/5.0 (Linux; Android 12; SM-F9160 Build/SP1A.210812.016; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/102.0.5005.78 Mobile Safari/537.36
+        .wiki.add mc minecraft.fandom.com/zh/ -D
         ```
 
-- ##### ``.wiki.rm <自定义wiki简称>``
+- ##### ``.wiki.set <已记录wiki名> <属性> <值>``
+  修改已记录的wiki的对应属性，``属性``应该为 ``name``、``api_url``、``curid_url`` 等的MWiki属性，``<值>``为所需要更改后的值。
+
+- ##### ``.wiki.rm <已记录wiki名>``
   从本群记录中移除指定已记录wiki。
 
-- ##### ``.wiki.<自定义wiki简称> <关键词>``
+- ##### ``.wiki.<已记录wiki名> <关键词>``
   指定使用一个已记录的wiki发起搜索。一个可能的实例:
   ```
   .wiki.moe 别当欧尼酱了
@@ -71,14 +61,14 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
 - ##### ``.wiki.ls``
   列出本群所有已记录wiki。
 
-- ##### ``.wiki.lsl <自定义wiki简称>``
-  以json形式返回目标已记录wiki的完全记录内容，当不追加参数指定wiki时将返回配置文件中的`RAW_MWIKI`
+- ##### ``.wiki.lsl <已记录wiki名>``
+  以json形式返回目标已记录wiki的完全记录内容，当不追加参数指定wiki时将返回配置文件中的`RAW_MWIKI`。
 
 
 ## 待办
 - [x] add子命令判断wiki api是否可用，以及是否可直接生成简介
 - [x] 默认UA储存问题
-- [ ] bilibili wiki适配器
+- [x] bilibili wiki适配器
 - [x] add子命令添加的wiki名称已被使用，阻止注册
 - [x] rm子命令删除时无论是否存在目标wiki都是返回“删除成功”，应当增加wiki存在性判定
 - [ ] 优化搜索流程，减少请求数，亦或是提高网络I/O利用率
