@@ -1,6 +1,6 @@
 from enum import unique, Enum
 from json import JSONDecodeError
-from typing import Optional, cast
+from typing import Optional, Union, cast
 
 from httpx import ConnectError
 
@@ -137,3 +137,15 @@ async def select_mwiki(wiki_name: str, group_id: int) -> Optional[MWiki]:
     else:
         # * 不存在对应wiki配置
         return None
+
+
+def get_mwiki(wiki_name: str, group_id: int) -> Union[MWiki, str]:
+
+    if Data().has_wiki(wiki_name, group_id):
+        wiki_list = Data().get_wiki_list(group_id)
+        for twiki in wiki_list:
+
+            if cast(MWiki, twiki).name == wiki_name:
+                return cast(MWiki, twiki)
+
+    return '不存在对应的已记录wiki'
