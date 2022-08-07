@@ -5,27 +5,19 @@ from json import dumps
 import traceback
 from typing import cast
 
-from .utils import Status, args2mwiki, check_wiki
+from .utils import Status, args2mwiki, check_wiki, get_mwiki
 from ..data import Data, MWiki
 from . import admin, member
 
 
 async def lsl(args: dict):
     if len(args['fn_args']):
-        name = args['fn_args'][0]
-
-        if Data().has_wiki(name, args['group_id']):
-            wiki_list = Data().get_wiki_list(args['group_id'])
-            tar_wiki = MWiki()
-            for twiki in wiki_list:
-
-                if cast(MWiki, twiki).name == name:
-                    tar_wiki = cast(MWiki, twiki)
-                    break
-
-            return dumps(tar_wiki.dict())
+        mwiki = get_mwiki(
+            wiki_name=args['fn_args'][0], group_id=args['group_id'])
+        if type(mwiki) is str:
+            return mwiki
         else:
-            return "不存在目标wiki"
+            return dumps(cast(MWiki, mwiki).dict())
 
     else:
         return dumps(args['config'].RAW_MWIKI)
@@ -74,7 +66,43 @@ async def add(args: dict) -> str:
 
 
 async def set(args: dict) -> str:
-    return ''
+
+    if len(args['fn_args']) == 3:
+
+        wiki_name = args['fn_args'][0]
+        _key = args['fn_args'][1]
+        _value = args['fn_args'][2]
+        _group_id = args['group_id']
+
+        mwiki = get_mwiki(
+            wiki_name=wiki_name, group_id=_group_id)
+
+        if type(mwiki) is str:
+            ret = mwiki
+
+        else:
+            if _key in cast(MWiki, mwiki).dict().keys():
+
+                # 删除原始记录
+                await rm(args)
+                # 修改参数
+                setattr(mwiki, _key, _value)
+                # 写入
+                Data().add_wiki(cast(MWiki, mwiki), _group_id)
+                # 返回json格式的修改后的wiki记录
+                if _key == 'name':
+                    # 更改wiki记录名时一同修改缓存内wiki名
+                    args['fn_args'][0] = _value
+
+                ret = await lsl(args)
+                ret = f'修改后的wiki记录为：\n{ret}'
+
+            else:
+                ret = '目标wiki不存在此属性'
+    else:
+        ret = '参数项数错误，请依照格式重新输入'
+
+    return ret
 
 
 async def rm(args: dict) -> str:
