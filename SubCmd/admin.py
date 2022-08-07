@@ -49,7 +49,7 @@ async def add(args: dict) -> str:
     try:
 
         # 构造Mwiki对象用以记录
-        if len(args['fn_args']) in [0, 1]:
+        if len(args['fn_args']) in (0, 1):
             raise IndexError
         mwiki = args2mwiki(
             args=args['fn_args'], raw_mwiki=args['config'].RAW_MWIKI)
@@ -58,17 +58,23 @@ async def add(args: dict) -> str:
     except Exception:
         return traceback.format_exc()
 
-    try:
-        # * 判断wiki api可用性
-        api_status = await check_wiki(mwiki, args['config'].PROXIES)
-        if api_status == Status.OK:
-            Data().add_wiki(mwiki, args['group_id'])
-            return '记录完成'
-        else:
-            return api_status.get_msg()
+    if args['fn_args'][-1] not in ('-d', '-D'):
+        # 未追加 -D/-d 时，检查api可用性
+        try:
+            # * 判断wiki api可用性
+            api_status = await check_wiki(mwiki, args['config'].PROXIES)
+            if api_status != Status.OK:
+                return api_status.get_msg()
 
-    except Exception:
-        return traceback.format_exc()
+        except Exception:
+            return traceback.format_exc()
+
+    Data().add_wiki(mwiki, args['group_id'])
+    return '记录完成'
+
+
+async def set(args: dict) -> str:
+    return ''
 
 
 async def rm(args: dict) -> str:
