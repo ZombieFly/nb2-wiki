@@ -20,7 +20,7 @@ async def lsl(args: dict):
             return dumps(cast(MWiki, mwiki).dict())
 
     else:
-        return dumps(args['config'].RAW_MWIKI)
+        return dumps(args['config'].RAW_MWIKI.dict())
 
 
 async def add(args: dict) -> str:
