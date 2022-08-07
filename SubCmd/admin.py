@@ -46,15 +46,15 @@ async def add(args: dict) -> str:
     # * 阻止使用已注册的名称
     if Data().has_wiki(args['fn_args'][0], args['group_id']):
         return '该名称已被注册'
+    # * 阻止参数缺省
+    if len(args['fn_args']) in (0, 1):
+        return '参数缺省，请重新输入'
+
     try:
 
         # 构造Mwiki对象用以记录
-        if len(args['fn_args']) in (0, 1):
-            raise IndexError
         mwiki = args2mwiki(
             args=args['fn_args'], raw_mwiki=args['config'].RAW_MWIKI)
-    except IndexError:
-        return '参数缺省，请重新输入'
     except Exception:
         return traceback.format_exc()
 
