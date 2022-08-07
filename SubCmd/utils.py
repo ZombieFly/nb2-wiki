@@ -78,8 +78,9 @@ def args2mwiki(args: dict, raw_mwiki: MWiki) -> MWiki:
     target.name = next(_it)
     target.api_url = url_format(next(_it))
 
-    target.api_url = target.api_url if (
-        'api.php' in target.api_url) else (target.api_url + 'api.php')
+    target.curid_url = target.api_url + 'index.php?curid='
+
+    target.api_url = target.api_url + 'api.php'
 
     return target
 
