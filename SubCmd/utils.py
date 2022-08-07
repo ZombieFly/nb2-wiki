@@ -75,31 +75,11 @@ def args2mwiki(args: dict, raw_mwiki: MWiki) -> MWiki:
     target = cast(MWiki, raw_mwiki)
     _it = iter(args)
 
-    try:
-        target.name = next(_it)
-        target.api_url = url_format(next(_it), need_slash=False)
+    target.name = next(_it)
+    target.api_url = url_format(next(_it))
 
-        np_arg = str()
-
-        try:
-            target.curid_url = url_format(next(_it), need_slash=False)
-        except StopIteration:
-            url = url_format(target.api_url)
-            target.api_url = url + 'api.php'
-            target.curid_url = url + 'index.php?curid='
-            raise StopIteration
-        try:
-            np_arg = next(_it)
-            target.need_proxy = bool(int(np_arg))
-        except ValueError:
-            raise ValueError(f'指定是否使用代理的参数"{np_arg}"有误，正确的值应该为“0”与“1”中的一个')
-        target.user_agent = " ".join(list(_it))
-
-    except StopIteration:
-        # 迭代器终止退出
-        pass
-    except Exception as err:
-        raise err
+    target.api_url = target.api_url if (
+        'api.php' in target.api_url) else (target.api_url + 'api.php')
 
     return target
 
