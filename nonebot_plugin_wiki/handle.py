@@ -2,6 +2,7 @@
 用以处理简介、搜索结果输出
 """
 
+from typing import List
 import re
 
 from . import mediawiki as Wiki
@@ -14,7 +15,7 @@ def nn_to_n(raw: str) -> str:
     return re.sub(r"\n\n", r"\n", raw)
 
 
-def refer_to_list(raw: Wiki.exceptions.DisambiguationError, max: int = 10) -> list[str]:
+def refer_to_list(raw: Wiki.exceptions.DisambiguationError, max: int = 10) -> List[str]:
     """将建议列表以列表形式输出,参数max控制返回列表最大长度
 
     Args:
