@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from typing import List
+from typing import Tuple
 import httpx
 import time
 from bs4 import BeautifulSoup
@@ -268,7 +268,7 @@ async def summary(
     chars=0,
     auto_suggest=True,
     redirect=True
-) -> List[int, str]:  # type: ignore
+) -> Tuple[int, str]:  # type: ignore
     '''
     页面id与纯文本简介
     Keyword arguments:
