@@ -17,9 +17,11 @@
 基于[wikipedia](https://github.com/goldsmith/Wikipedia)，适用于 [Nonebot2](https://github.com/nonebot/nonebot2) 的 mediawiki搜索 插件，同时你的Nonebot版本应不低于Nonebot2.0b1。 
 
 ## 关于
-本项目作为 [AXbot/mws.py](https://github.com/ZombieFly/AXbot/blob/master/mws.py) 的重构 nonebot2 适配版，代码逻辑已然完全不同，并且功能得到了更大的拓展，但仍旨在能于即时通讯平台中快速引用wiki条目，让由各大wiki中所整合的知识为更多人所用。
+- 本项目作为 [AXbot/mws.py](https://github.com/ZombieFly/AXbot/blob/master/mws.py) 的重构 nonebot2 适配版，代码逻辑已然完全不同，并且功能得到了更大的拓展，但仍旨在能于即时通讯平台中快速引用wiki条目，让由各大wiki中所整合的知识为更多人所用。
 
-该项目目前仍属于较高频率代码变更状态，未发布正式版，可能并不适合立即投入生产环境，请务必于测试环境中进行调试后再投入生产环境。
+- 不止步于mediawiki api，本项目正在尝试兼容Bilibili wiki，目前对于 中文 Minecraft Wiki （Bilibili Wiki镜像站）的简介生成具有一定的支持度。 
+
+- 该项目目前仍属于较高频率代码变更状态，未发布正式版，可能并不适合立即投入生产环境，请务必于测试环境中进行调试后再投入生产环境。
 
 ## 安装
 
@@ -50,19 +52,19 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
 以下命令实例中，假定bot配置的命令头为 ``.``、``/``，请依据实际情况替换。
 
 - ##### ``/wiki <关键词>`` <br>
-通过 ``raw_MWiki`` 发起搜索，一个可用实例：
-```
-/wiki 绵羊
-```
+  通过 ``raw_MWiki`` 发起搜索，一个可用实例：
+  ```
+  /wiki 绵羊
+  ```
 
 - ##### ``/wiki.add <自定义wiki简称> <wiki地址> <-d/D （可选）>``<br>
-    - 其中，``wiki地址`` 应为 ``/api.php`` 或 ``/index.php?curid=`` 前部分，链接开头的http协议可省略，（如 ``minecraft.fandom.com/zh/`` ）。当需要使用的api与curid链接前部分不相同时，可在记录后，使用``set``子命令进行修改;
-    - 此外，命令中两处的 ``/`` 、 ``.`` 可替换为**任一被定义的命令头**，例如在本文档假设的环境中， ``.wiki/add`` 、 ``/wiki/add`` 等的皆可触发此子命令，下文将不再赘述此特征；
-    - 末尾可选参数 ``-D`` 或 ``-d``，添加后，将跳过wiki api可用性检查，直接记录wiki。
-    - 一个可用的实例：
-        ```
-        .wiki.add mc minecraft.fandom.com/zh/ -D
-        ```
+  - 其中，``wiki地址`` 应为 ``/api.php`` 或 ``/index.php?curid=`` 前部分，链接开头的http协议可省略，（如 ``minecraft.fandom.com/zh/`` ）。当需要使用的api与curid链接前部分不相同时，可在记录后，使用``set``子命令进行修改;
+   - 此外，命令中两处的 ``/`` 、 ``.`` 可替换为**任一被定义的命令头**，例如在本文档假设的环境中， ``.wiki/add`` 、 ``/wiki/add`` 等的皆可触发此子命令，下文将不再赘述此特征；
+  - 末尾可选参数 ``-D`` 或 ``-d``，添加后，将跳过wiki api可用性检查，直接记录wiki。
+  - 一个可用的实例：
+    ```
+    .wiki.add mc minecraft.fandom.com/zh/ -D
+    ```
 
 - ##### ``.wiki.set <已记录wiki名> <属性> <值>``
   修改已记录的wiki的对应属性，``属性``应该为 ``name``、``api_url``、``curid_url`` 等的MWiki属性， ``值`` 为所需要更改后的值。
@@ -86,9 +88,11 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
 ## 待办
 - [x] add子命令判断wiki api是否可用，以及是否可直接生成简介
 - [x] 默认UA储存问题
-- [x] bilibili wiki适配器
+- [x] bilibili minecraft wiki适配器
 - [x] add子命令添加的wiki名称已被使用，阻止注册
 - [x] rm子命令删除时无论是否存在目标wiki都是返回“删除成功”，应当增加wiki存在性判定
+- [ ] 优化Biliwiki mc镜像简介生成结果
+- [ ] 兼容更多的Bilibili Wiki
 - [ ] 搜索时返回内容不是合规的json时的异常处理
 - [ ] 优化搜索流程，减少请求数，亦或是提高网络I/O利用率
 - [ ] 优化api检查机制
