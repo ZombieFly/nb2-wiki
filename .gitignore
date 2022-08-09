@@ -12,3 +12,4 @@ nonebot_plugin_wiki.egg-info
 nonebot-plugin-wiki/config.py
 .vscode
 package.sh
+pre-package.sh
