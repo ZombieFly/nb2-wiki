@@ -11,6 +11,7 @@ from . import admin, member
 
 
 async def lsl(args: dict):
+
     if len(args['fn_args']):
         mwiki = get_mwiki(
             wiki_name=args['fn_args'][0], group_id=args['group_id'])
@@ -20,7 +21,7 @@ async def lsl(args: dict):
             return dumps(cast(MWiki, mwiki).dict())
 
     else:
-        return dumps(args['config'].RAW_MWIKI.dict())
+        return dumps(args['config'].raw_mwiki.dict())
 
 
 async def add(args: dict) -> str:
@@ -46,7 +47,7 @@ async def add(args: dict) -> str:
 
         # 构造Mwiki对象用以记录
         mwiki = args2mwiki(
-            args=args['fn_args'], raw_mwiki=args['config'].RAW_MWIKI)
+            args=args['fn_args'], raw_mwiki=args['config'].raw_mwiki)
     except Exception:
         return traceback.format_exc()
 
@@ -54,7 +55,7 @@ async def add(args: dict) -> str:
         # 未追加 -D/-d 时，检查api可用性
         try:
             # * 判断wiki api可用性
-            api_status = await check_wiki(mwiki, args['config'].PROXIES)
+            api_status = await check_wiki(mwiki, args['config'].proxies)
             if api_status != Status.OK:
                 return api_status.get_msg()
 

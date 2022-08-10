@@ -1,6 +1,6 @@
 from enum import unique, Enum
 from json import JSONDecodeError
-from typing import Optional, Union, cast
+from typing import Optional, Union, cast, Dict
 
 from httpx import ConnectError
 
@@ -54,7 +54,7 @@ def url_format(url: str, need_slash=True) -> str:
     return url
 
 
-def set_wiki(mwiki: MWiki, proxies: dict[str, str] = dict()):
+def set_wiki(mwiki: MWiki, proxies: Dict[str, str] = dict()):
     Wiki.set_api_url(mwiki.api_url)
     Wiki.set_curid_url(mwiki.curid_url)
     Wiki.set_user_agent(mwiki.user_agent)
@@ -85,12 +85,12 @@ def args2mwiki(args: dict, raw_mwiki: MWiki) -> MWiki:
     return target
 
 
-async def check_wiki(mwiki: MWiki, proxies: dict[str, str] = dict()) -> Status:
+async def check_wiki(mwiki: MWiki, proxies: Dict[str, str] = dict()) -> Status:
     """检查wiki api可用性
 
     Args:
         mwiki (MWiki): 待检测MWiki对象
-        proxies (dict[str, str], optional): 代理设置. Defaults to dict().
+        proxies (Dict[str, str], optional): 代理设置. Defaults to dict().
 
     Returns:
         Status

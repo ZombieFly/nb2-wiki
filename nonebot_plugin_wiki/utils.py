@@ -4,7 +4,6 @@
 
 from typing import Union
 
-from nonebot import get_driver
 from nonebot.adapters.onebot.v11 import MessageSegment
 from nonebot.adapters import Message
 
@@ -15,13 +14,13 @@ from .mediawiki.exceptions import NoExtractError
 
 from . import handle
 
-from .config import Config
+global PROXIES
 
-global_config = get_driver().config
-config = Config.parse_obj(global_config)
 
-RAW_MWIKI = config.RAW_MWIKI
-PROXIES = config.PROXIES
+def set_config(proxies, raw_mwiki):
+
+    global PROXIES
+    PROXIES = proxies
 
 
 def reply_out(msg_id: int, output: str) -> Message:
@@ -41,7 +40,7 @@ def reply_out(msg_id: int, output: str) -> Message:
 # ! 目前重定向可能会出现完全不相干的结果返回
 async def output(
     title: str,
-    mwiki: MWiki = RAW_MWIKI,
+    mwiki: MWiki,
     msg_id: int = int(),
     auto_suggest=True,
     redirect=True,

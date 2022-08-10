@@ -1,3 +1,5 @@
+from typing import Dict, cast
+from .data import MWiki
 from .config import Config
 from nonebot import get_driver, on_command
 from nonebot.adapters import Bot
@@ -20,17 +22,27 @@ from . import mediawiki as wiki
 from .SubCmd.utils import select_mwiki
 from .SubCmd import admin, member
 from . import handle
-from.utils import output, reply_out
+from .utils import output, reply_out, set_config
 
 
 global_config = get_driver().config
 config = Config.parse_obj(global_config)
 
-REFER_MAX = config.REFER_MAX
-RAW_MWIKI = config.RAW_MWIKI
-CMD_START = config.CMD_START
-wiki.set_retry_times(config.RETRY_TIMES)
 
+PROXIES = config.proxies
+REFER_MAX = config.refer_max
+CMD_START = config.cmd_start
+wiki.set_retry_times(config.retry_times)
+
+RAW_MWIKI = MWiki()
+
+for _key, _value in cast(Dict, config.raw_mwiki).items():
+    setattr(RAW_MWIKI, _key, _value)
+
+
+config.raw_mwiki = RAW_MWIKI
+
+set_config(PROXIES, RAW_MWIKI)
 
 cmd = on_command(CMD_START[0], aliases=set(CMD_START[1:]), permission=GROUP)
 
