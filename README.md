@@ -14,7 +14,7 @@
 </div>
 
 
-基于[wikipedia](https://github.com/goldsmith/Wikipedia)，适用于 [Nonebot2](https://github.com/nonebot/nonebot2) 的 mediawiki搜索 插件，同时你的Nonebot版本应不低于Nonebot2.0b1。 
+基于 [wikipedia](https://github.com/goldsmith/Wikipedia)，适用于 [Nonebot2](https://github.com/nonebot/nonebot2) 的 mediawiki搜索 插件，同时你的Nonebot版本应不低于Nonebot2.0b1。 
 
 ## 关于
 - 本项目作为 [AXbot/mws.py](https://github.com/ZombieFly/AXbot/blob/master/mws.py) 的重构 nonebot2 适配版，代码逻辑已然完全不同，并且功能得到了更大的拓展，但仍旨在能于即时通讯平台中快速引用wiki条目，让由各大wiki中所整合的知识为更多人所用。
