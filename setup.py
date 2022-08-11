@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="nonebot-plugin-wiki",
-    version="0.0.4-2",
+    version="0.0.4-3",
     author="ZombieFly",
     author_email="xyzomfly@gmail.com",
     description="Nonebot2 插件，基于mediawiki api搜索条目",
