@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from decimal import Decimal
 import re
+from json.decoder import JSONDecodeError
 
 from .exceptions import (
     ApiReturnError,
@@ -18,6 +19,7 @@ from .exceptions import (
     ODD_ERROR_MESSAGE
 )
 from . import util
+from ..SubCmd.utils import Status
 
 API_URL = 'https://zh.moegirl.org.cn/api.php'
 CURID_URL = 'https://minecraft.fandom.com/zh/index.php?curid='
@@ -826,7 +828,11 @@ async def _wiki_request(params):
     for times in range(RETRY_TIMES):
         async with httpx.AsyncClient(proxies=PROXIES, timeout=None) as client:
             r = await client.get(API_URL, params=params, headers=headers)
-        ret = r.json()
+
+        try:
+            ret = r.json()
+        except JSONDecodeError:
+            raise WikipediaException(Status.API_ERROR.get_msg())
 
         if 'error' in ret:
             if ' a temporary problem' in ret['error']['info']:
