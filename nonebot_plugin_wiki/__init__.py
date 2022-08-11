@@ -172,10 +172,10 @@ async def _cmd(
                     else:
                         # * 普通成员调用不存在的平级命令或是管理员权限命令
                         raise AttributeError
-                except Exception:
+                except Exception as e:
                     logger.debug(
                         f'[S2M]触发意料外的异常:\n{traceback.format_exc()}')
-                    await cmd.finish(reply_out(event.message_id, traceback.format_exc()))
+                    await cmd.finish(reply_out(event.message_id, f'发生异常：\n{repr(e)}'))
             except AttributeError:
                 logger.debug(f'[S3]子命令"{to_run}"未找到，尝试从已记录wiki中寻找')
                 # * 不存在对应子命令时，调用seletc_wiki函数，获取可能的对应的wiki配置
@@ -200,6 +200,6 @@ async def _cmd(
                             '不存在的命令或是已记录wiki，请检查是否具有对应权限或者输入是否正确'
                         )
                     )
-            except Exception:
+            except Exception as e:
                 logger.debug(f'[S6]触发意料外的异常:\n{traceback.format_exc()}')
-                await cmd.finish(reply_out(event.message_id, traceback.format_exc()))
+                await cmd.finish(reply_out(event.message_id, f'发生异常：\n{repr(e)}'))
