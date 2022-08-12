@@ -93,6 +93,6 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
 - [x] rm子命令删除时无论是否存在目标wiki都是返回“删除成功”，应当增加wiki存在性判定
 - [ ] 优化Biliwiki mc镜像简介生成结果
 - [ ] 兼容更多的Bilibili Wiki
-- [ ] 搜索时返回内容不是合规的json时的异常处理
+- [x] 搜索时返回内容不是合规的json时的异常处理
 - [ ] 优化搜索流程，减少请求数，亦或是提高网络I/O利用率
 - [ ] 优化api检查机制
