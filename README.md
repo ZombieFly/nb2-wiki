@@ -25,12 +25,17 @@
 
 ## 安装
 
-### 通过pip安装
+### 通过 nb-cli 安装（推荐）
+```bash
+nb plugin install nonebot-plugin-wiki
+```
+
+### 通过 pip 安装
 ```bash
 pip install nonebot_plugin_wiki
 ```
 
-### 从github仓库安装
+### 从 github 仓库安装
 克隆此仓库至 nonebot 生成的目录中对应的存放插件的文件夹内。
 ```bash
 git clone https://github.com/ZombieFly/nb2-wiki.git
