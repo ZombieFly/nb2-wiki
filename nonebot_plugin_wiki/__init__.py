@@ -22,7 +22,7 @@ from . import mediawiki as wiki
 from .SubCmd.utils import select_mwiki
 from .SubCmd import admin, member
 from . import handle
-from .utils import output, reply_out, set_config
+from .utils import output, reply_out, set_proxies
 
 
 global_config = get_driver().config
@@ -42,7 +42,7 @@ for _key, _value in cast(Dict, config.raw_mwiki).items():
 
 config.raw_mwiki = RAW_MWIKI
 
-set_config(PROXIES, RAW_MWIKI)
+set_proxies(PROXIES, RAW_MWIKI)
 
 cmd = on_command(CMD_START[0], aliases=set(CMD_START[1:]), permission=GROUP)
 

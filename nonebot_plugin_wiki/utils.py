@@ -17,10 +17,10 @@ from . import handle
 global PROXIES
 
 
-def set_config(proxies, raw_mwiki):
-
+def set_proxies(raw_mwiki, proxies=dict()):
     global PROXIES
-    PROXIES = proxies
+
+    PROXIES = (proxies or raw_mwiki)
 
 
 def reply_out(msg_id: int, output: str) -> Message:
