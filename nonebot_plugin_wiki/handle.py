@@ -33,7 +33,7 @@ def chars_max(raw: str, txt=str(), max=0) -> str:
     '''
     控制输入文本最大字数,并在末尾追加省略信息
     '''
-    txt = (raw if not txt else txt)
+    txt = (txt or raw)
     return (
         txt
         if len(txt) <= max or not max else
