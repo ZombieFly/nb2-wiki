@@ -35,14 +35,14 @@ nb plugin install nonebot-plugin-wiki
 pip install nonebot_plugin_wiki
 ```
 
-### 从 github 仓库安装
+### 从 github 仓库克隆
 克隆此仓库至 nonebot 生成的目录中对应的存放插件的文件夹内。
 ```bash
 git clone https://github.com/ZombieFly/nb2-wiki.git
 ```
 
 ## 配置
-本插件无需配置即可使用，同时亦可依照 nonebot 的 [配置方法](https://v2.nonebot.dev/docs/tutorial/configuration) 对插件进行定制，以下配置项为可选配置：
+本插件默认使用 中文 Minecraft Wiki 作为 ``RAW_MWIKI`` 记录，如需更改 ，可依照 nonebot 的 [配置方法](https://v2.nonebot.dev/docs/tutorial/configuration) 对插件进行定制，以下配置项为可选配置：
 - ``PROXIES``：代理地址，默认值为 ``{}``，当所使用的MWiki的 ``need_proxy``为``True``时使用；
 
 - ``REFER_MAX``：相关搜索结果最大返回值，默认值为 ``10``；
@@ -62,7 +62,7 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
   /wiki 绵羊
   ```
 
-- ##### ``/wiki.add <自定义wiki简称> <wiki地址> <-d/D （可选）>``<br>
+- ##### ``/wiki.add <自定义wiki简称> <wiki地址> <-d/D （可选）>``（限群管理员权限）<br>
   - 其中，``wiki地址`` 应为 ``/api.php`` 或 ``/index.php?curid=`` 前部分，链接开头的http协议可省略，（如 ``minecraft.fandom.com/zh/`` ）。当需要使用的api与curid链接前部分不相同时，可在记录后，使用``set``子命令进行修改;
    - 此外，命令中两处的 ``/`` 、 ``.`` 可替换为**任一被定义的命令头**，例如在本文档假设的环境中， ``.wiki/add`` 、 ``/wiki/add`` 等的皆可触发此子命令，下文将不再赘述此特征；
   - 末尾可选参数 ``-D`` 或 ``-d``，添加后，将跳过wiki api可用性检查，直接记录wiki。
@@ -71,10 +71,10 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
     .wiki.add mc minecraft.fandom.com/zh/ -D
     ```
 
-- ##### ``.wiki.set <已记录wiki名> <属性> <值>``
+- ##### ``.wiki.set <已记录wiki名> <属性> <值>`` （限群管理员权限）
   修改已记录的wiki的对应属性，``属性``应该为 ``name``、``api_url``、``curid_url`` 等的MWiki属性， ``值`` 为所需要更改后的值。
 
-- ##### ``.wiki.rm <已记录wiki名>``
+- ##### ``.wiki.rm <已记录wiki名>``（限群管理员权限）
   从本群记录中移除指定已记录wiki。
 
 - ##### ``.wiki.<已记录wiki名> <关键词>``
@@ -86,7 +86,7 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
 - ##### ``.wiki.ls``
   列出本群所有已记录wiki。
 
-- ##### ``.wiki.lsl <已记录wiki名>``
+- ##### ``.wiki.lsl <已记录wiki名>``（限群管理员权限）
   以json形式返回目标已记录wiki的完全记录内容，当不追加参数指定wiki时将返回配置文件中的 `RAW_MWIKI`。
 
 
@@ -101,3 +101,4 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
 - [x] 搜索时返回内容不是合规的json时的异常处理
 - [ ] 优化搜索流程，减少请求数，亦或是提高网络I/O利用率
 - [ ] 优化api检查机制
+- [ ] 搜索结果缓存
