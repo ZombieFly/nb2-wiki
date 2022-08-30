@@ -2,7 +2,6 @@
 """
 
 from json import dumps
-import traceback
 from typing import cast
 
 from .utils import Status, args2mwiki, check_wiki, get_mwiki
@@ -41,8 +40,8 @@ async def add(args: dict) -> str:
         # 构造Mwiki对象用以记录
         mwiki = args2mwiki(
             args=args['fn_args'], raw_mwiki=args['config'].raw_mwiki)
-    except Exception:
-        return traceback.format_exc()
+    except Exception as e:
+        return repr(e)
 
     if args['fn_args'][-1] not in ('-d', '-D'):
         # 未追加 -D/-d 时，检查api可用性
@@ -52,8 +51,8 @@ async def add(args: dict) -> str:
             if api_status != Status.OK:
                 return api_status.get_msg()
 
-        except Exception:
-            return traceback.format_exc()
+        except Exception as e:
+            return repr(e)
 
     Data().add_wiki(mwiki, args['group_id'])
     return '记录完成'
@@ -104,5 +103,5 @@ async def rm(args: dict) -> str:
             return "移除wiki成功！"
         else:
             return "不存在这个名称的已记录wiki"
-    except Exception:
-        return traceback.format_exc()
+    except Exception as e:
+        return repr(e)
