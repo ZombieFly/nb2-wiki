@@ -48,9 +48,9 @@ def url_format(url: str, need_slash=True) -> str:
         str: 处理后的url
     """
     if need_slash:
-        url = (url if url[-1] == r'/' else url + r'/')
-    if not (url[0:8] == 'https://' or url[0:7] == 'http://'):
-        url = 'https://' + url
+        url = url if url[-1] == '/' else f'{url}/'
+    if url[:8] != 'https://' and url[:7] != 'http://':
+        url = f'https://{url}'
     return url
 
 
@@ -78,9 +78,9 @@ def args2mwiki(args: dict, raw_mwiki: MWiki) -> MWiki:
     target.name = next(_it)
     target.api_url = url_format(next(_it))
 
-    target.curid_url = target.api_url + 'index.php?curid='
+    target.curid_url = f'{target.api_url}index.php?curid='
 
-    target.api_url = target.api_url + 'api.php'
+    target.api_url = f'{target.api_url}api.php'
 
     return target
 
@@ -116,6 +116,7 @@ async def check_wiki(mwiki: MWiki, proxies: Dict[str, str] = dict()) -> Status:
 
 
 async def select_mwiki(wiki_name: str, group_id: int) -> Optional[MWiki]:
+    # sourcery skip: remove-unnecessary-else, swap-if-else-branches
     """
     获得已记录的MWiki对象
     不存在时返回None

@@ -24,6 +24,11 @@ class MWiki(BaseModel):
 WikiList = Dict[str, Dict[int, List[MWiki]]]
 
 
+# todo
+class CArgs(BaseModel):
+    pass
+
+
 class Data:
     __wiki_list: WikiList = {"user": {}, "group": {}}
     __path: Path
@@ -35,18 +40,13 @@ class Data:
         self.__path = path
         self.__load()
 
-    def get_wiki_list(
-        self, group_id: int
-    ) -> Union[WikiList, List[MWiki]]:
-
+    def get_wiki_list(self, group_id: int) -> Union[WikiList, List[MWiki]]:
         wiki_list = self.__wiki_list
-
-        if group_id:
-            if group_id not in wiki_list["group"]:
-                wiki_list["group"][group_id] = []
-            return wiki_list["group"][group_id]
-        else:
+        if not group_id:
             return wiki_list
+        if group_id not in wiki_list["group"]:
+            wiki_list["group"][group_id] = []
+        return wiki_list["group"][group_id]
 
     def has_wiki(self, name: str, group_id: int) -> bool:
         return bool(
@@ -86,14 +86,15 @@ class Data:
             bool: 是否成功删除，返回False即不存在目标wiki
         """
         if self.has_wiki(name, group_id):
-            wiki_list = list(
+            if wiki_list := list(
                 filter(
                     lambda wiki: wiki.name != name,
-                    cast(List[MWiki], self.__wiki_list["group"][group_id]),
+                    cast(
+                        List[MWiki],
+                        self.__wiki_list["group"][group_id]
+                    ),
                 )
-            )
-
-            if wiki_list:
+            ):
                 self.__wiki_list["group"][group_id] = wiki_list  # type: ignore
             else:
                 self.__wiki_list["group"].pop(group_id)  # type: ignore
