@@ -11,17 +11,10 @@ from . import admin, member
 
 
 async def lsl(args: dict):
-
-    if len(args['fn_args']):
-        mwiki = get_mwiki(
-            wiki_name=args['fn_args'][0], group_id=args['group_id'])
-        if type(mwiki) is str:
-            return mwiki
-        else:
-            return dumps(cast(MWiki, mwiki).dict())
-
-    else:
+    if not len(args['fn_args']):
         return dumps(args['config'].raw_mwiki.dict())
+    mwiki = get_mwiki(wiki_name=args['fn_args'][0], group_id=args['group_id'])
+    return mwiki if type(mwiki) is str else dumps(cast(MWiki, mwiki).dict())
 
 
 async def add(args: dict) -> str:
@@ -81,25 +74,24 @@ async def set(args: dict) -> str:
         if type(mwiki) is str:
             ret = mwiki
 
+        elif _key in cast(MWiki, mwiki).dict().keys():
+
+            # 删除原始记录
+            await rm(args)
+            # 修改参数
+            setattr(mwiki, _key, _value)
+            # 写入
+            Data().add_wiki(cast(MWiki, mwiki), _group_id)
+            # 返回json格式的修改后的wiki记录
+            if _key == 'name':
+                # 更改wiki记录名时一同修改缓存内wiki名
+                args['fn_args'][0] = _value
+
+            ret = await lsl(args)
+            ret = f'修改后的wiki记录为：\n{ret}'
+
         else:
-            if _key in cast(MWiki, mwiki).dict().keys():
-
-                # 删除原始记录
-                await rm(args)
-                # 修改参数
-                setattr(mwiki, _key, _value)
-                # 写入
-                Data().add_wiki(cast(MWiki, mwiki), _group_id)
-                # 返回json格式的修改后的wiki记录
-                if _key == 'name':
-                    # 更改wiki记录名时一同修改缓存内wiki名
-                    args['fn_args'][0] = _value
-
-                ret = await lsl(args)
-                ret = f'修改后的wiki记录为：\n{ret}'
-
-            else:
-                ret = '目标wiki不存在此属性'
+            ret = '目标wiki不存在此属性'
     else:
         ret = '参数项数错误，请依照格式重新输入'
 
