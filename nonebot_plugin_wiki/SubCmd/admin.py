@@ -16,7 +16,7 @@ async def lsl(args: dict):
     return mwiki if type(mwiki) is str else dumps(cast(MWiki, mwiki).dict())
 
 
-async def add(args: dict) -> str:
+async def add(args: dict) -> str:  # sourcery skip: collection-into-set
     """#增加记录
 
     Args:
