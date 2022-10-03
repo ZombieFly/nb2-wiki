@@ -46,7 +46,7 @@ set_proxies(PROXIES, RAW_MWIKI)
 
 cmd = on_command(CMD_START[0], aliases=set(CMD_START[1:]), permission=GROUP)
 
-CMD_START = [i + ' ' for i in CMD_START]
+CMD_START = [f'{i} ' for i in CMD_START]
 search = on_command(CMD_START[0], aliases=set(CMD_START[1:]))
 
 
@@ -66,18 +66,19 @@ async def _search(
 
     numb: str = event.message.extract_plain_text()
     msg_id = event.message_id
+
     if numb and not keywd:
         # * 用户发送了对应条目的标号后的处理
         # * 撤回搜索结果列表消息
         await bot.delete_msg(message_id=state['refer_msg_id']['message_id'])
         try:
             numb = int(numb)  # type: ignore
-            logger.debug(f'用户输入的标号是{str(numb)}')
+            logger.debug(f'用户输入的标号是{numb}')
             outstr = await output(
                 title=state['results'][numb],
                 mwiki=(
                     RAW_MWIKI
-                    if not state.__contains__('mwiki')else
+                    if not state.__contains__('mwiki') else
                     state['mwiki']
                 ),
                 msg_id=msg_id,
@@ -91,7 +92,7 @@ async def _search(
             # 给的数大了
             await search.send(f'{numb}超出了索引')
         raise FinishedException
-    #################
+
     else:
         # * 会话开启的第一次处理
         try:
