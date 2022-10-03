@@ -13,7 +13,7 @@ class Config(BaseModel, extra=Extra.ignore):
     refer_max: int = 10
     # 默认MWiki
     raw_mwiki: Union[Dict, MWiki] = {
-        'name': 'mc',
+        'name': 'GLOBAL',
         'api_url': 'https://minecraft.fandom.com/zh/api.php',
         'curid_url': 'https://minecraft.fandom.com/zh/index.php?curid=',
         'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit 537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36',
