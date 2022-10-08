@@ -10,6 +10,7 @@ import re
 
 from .exceptions import (
     ApiReturnError,
+    NoExtractError,
     PageError,
     DisambiguationError,
     RedirectError,
@@ -262,13 +263,41 @@ async def random(pages=1):
     return titles
 
 
+async def bwiki_summary(title: str):
+    """接受来自BWiki的标题，返回文字简介
+
+    Args:
+        title: 标题
+
+    Returns:
+        str: 简介
+    """
+    params = {
+        "action": "parse",
+        "format": "json",
+        "disablelimitreport": False,
+        "redirects": True,
+        "disableeditsection": True,
+        "page": title
+    }
+
+    request = await _wiki_request(params)
+
+    to_feed = request["parse"]["text"]["*"]
+    wikibot_parser = util.SimpleInnerParser("", ("class", "wiki-bot"))
+    wikibot_parser.feed(to_feed)
+    wikibot_parser.close()
+
+    return '\n'.join(wikibot_parser.output)
+
+
 async def summary(
     title,
     sentences=0,
     chars=0,
     auto_suggest=True,
     redirect=True
-) -> Tuple[int, str]:  # type: ignore
+) -> Tuple[int, str]:    # type: ignore
     '''
     页面id与纯文本简介
     Keyword arguments:
@@ -292,35 +321,21 @@ async def summary(
         'titles': title,
 
     }
+    if "wiki.biligame" not in API_URL:
+        if sentences:
+            query_params['exsentences'] = sentences
+        elif chars:
+            query_params['exchars'] = chars
+        else:
+            query_params['exintro'] = ''
+        request = await _wiki_request(query_params)
+        try:
+            summary = (request['query']['pages'][pageid]['extract']).strip()
+        except KeyError as e:
+            raise NoExtractError from e
 
-    if sentences:
-        query_params['exsentences'] = sentences
-    elif chars:
-        query_params['exchars'] = chars
     else:
-        query_params['exintro'] = ''
-    request = await _wiki_request(query_params)
-    try:
-        summary = (request['query']['pages'][pageid]['extract']).strip()
-    except KeyError:
-
-        # bili wiki解析
-        global USER_AGENT
-
-        headers = {
-            'User-Agent': USER_AGENT
-        }
-
-        async with httpx.AsyncClient(proxies=PROXIES, timeout=None) as client:
-            r = await client.get(page_info.url, headers=headers)
-
-        r = r.text
-
-        summary = re.sub(r"</?(.+?)>", "", ''.join(re.compile(
-            r'<p><b>(.*?)\n<p>\n<div').findall(r)))
-        if summary == '':
-            summary = re.sub(r"</?(.+?)>", "", ''.join(re.compile(
-                r'<p><b>(.*?)\n</p>').findall(r)))
+        summary = await bwiki_summary(title)
 
     return [pageid, summary]  # type: ignore
 
@@ -805,7 +820,7 @@ async def _wiki_request(params):
     global PROXIES
 
     params['format'] = 'json'
-    if not ('action' in params):
+    if 'action' not in params:
         params['action'] = 'query'
 
     headers = {
@@ -823,16 +838,14 @@ async def _wiki_request(params):
         time.sleep(int(wait_time.total_seconds()))
 
     global RETRY_TIMES
-    for times in range(RETRY_TIMES):
+    for _ in range(RETRY_TIMES):
         async with httpx.AsyncClient(proxies=PROXIES, timeout=None) as client:
             r = await client.get(API_URL, params=params, headers=headers)
 
         ret = r.json()
+        # print(ret)
 
-        if 'error' in ret:
-            if ' a temporary problem' in ret['error']['info']:
-                pass
-        else:
+        if 'error' not in ret:
             if RATE_LIMIT:
                 RATE_LIMIT_LAST_CALL = datetime.now()
             return ret
