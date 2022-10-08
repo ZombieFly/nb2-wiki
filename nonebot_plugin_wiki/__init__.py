@@ -142,6 +142,12 @@ async def _cmd(
     except AttributeError:
         await _search(bot, event, state, keywd)
     else:
+
+        if not keywd:
+            # TODO 接入帮助
+            logger.debug("无参数追加，结束事件")
+            return
+
         if keywd[0] in get_driver().config.command_start:
             # 解析出子命令与参数
             to_run, *args['fn_args'] = keywd[1:].split()
