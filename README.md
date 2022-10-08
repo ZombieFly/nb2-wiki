@@ -19,9 +19,9 @@
 ## 关于
 - 本项目作为 [AXbot/mws.py](https://github.com/ZombieFly/AXbot/blob/master/mws.py) 的重构 nonebot2 适配版，代码逻辑已然完全不同，并且功能得到了更大的拓展，但仍旨在能于即时通讯平台中快速引用wiki条目，让由各大wiki中所整合的知识为更多人所用。
 
-- 不止步于mediawiki api，本项目正在尝试兼容Bilibili wiki，目前对于 中文 Minecraft Wiki （Bilibili Wiki镜像站）的简介生成具有一定的支持度。 
+- 不止步于mediawiki api，本项目正在尝试兼容Bilibili wiki。依托于 [XZhouQD/nonebot-plugin-bwiki-navigator](https://github.com/XZhouQD/nonebot-plugin-bwiki-navigator.git) ，已具备部分兼容性，同时，[基于网页解析](https://github.com/ZombieFly/nb2-wiki/commit/f85f93a49dacbe99fa4025acc93f6f13326bfcb3)的简介获取正在优化。 
 
-- 该项目目前仍属于较高频率代码变更状态，未发布正式版，可能并不适合立即投入生产环境，请务必于测试环境中进行调试后再投入生产环境。
+- 该项目目前仍未发布正式版，可能并不适合立即投入生产环境，请务必于测试环境中进行调试后再投入生产环境。
 
 ## 安装
 
