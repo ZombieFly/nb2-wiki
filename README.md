@@ -19,7 +19,9 @@
 ## 关于
 - 本项目作为 [AXbot/mws.py](https://github.com/ZombieFly/AXbot/blob/master/mws.py) 的重构 nonebot2 适配版，代码逻辑已然完全不同，并且功能得到了更大的拓展，但仍旨在能于即时通讯平台中快速引用wiki条目，让由各大wiki中所整合的知识为更多人所用。
 
-- 不止步于mediawiki api，本项目正在尝试兼容Bilibili wiki。依托于 [XZhouQD/nonebot-plugin-bwiki-navigator](https://github.com/XZhouQD/nonebot-plugin-bwiki-navigator.git) ，已具备部分兼容性，同时，[基于网页解析](https://github.com/ZombieFly/nb2-wiki/commit/f85f93a49dacbe99fa4025acc93f6f13326bfcb3)的简介获取正在优化。 
+- 不止步于mediawiki api，本项目正在尝试兼容Bilibili wiki。依托于 [XZhouQD/nonebot-plugin-bwiki-navigator](https://github.com/XZhouQD/nonebot-plugin-bwiki-navigator.git) ，已具备部分兼容性，同时，[基于网页解析](https://github.com/ZombieFly/nb2-wiki/commit/f85f93a49dacbe99fa4025acc93f6f13326bfcb3)的简介获取正在优化。
+
+- 新的条目卡片已被纳入规划。
 
 - 该项目目前仍未发布正式版，可能并不适合立即投入生产环境，请务必于测试环境中进行调试后再投入生产环境。
 
@@ -96,9 +98,10 @@ git clone https://github.com/ZombieFly/nb2-wiki.git
 - [x] bilibili minecraft wiki适配器
 - [x] add子命令添加的wiki名称已被使用，阻止注册
 - [x] rm子命令删除时无论是否存在目标wiki都是返回“删除成功”，应当增加wiki存在性判定
-- [ ] 优化Biliwiki mc镜像简介生成结果
-- [ ] 兼容更多的Bilibili Wiki
+- [ ] 优化BWiki简介生成
 - [x] 搜索时返回内容不是合规的json时的异常处理
 - [ ] 优化搜索流程，减少请求数，亦或是提高网络I/O利用率
 - [ ] 优化api检查机制
 - [ ] 搜索结果缓存
+- [ ] 条目卡片生成
+- [ ] 重构子命令权限部分
