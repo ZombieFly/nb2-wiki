@@ -73,8 +73,10 @@ async def output(
         return reply_out(msg_id, 'api多次返回异常，请检查api状态或稍后重试')
     except wiki.PageError:
         return reply_out(msg_id, '目标页面不存在')
-    except wiki.WikipediaException:
-        return reply_out(msg_id, "api返回内容错误")
+    except wiki.DisambiguationError as DE:
+        raise DE
+    except wiki.WikipediaException as e:
+        return reply_out(msg_id, f'未知错误：{e}')
 
     _summary = handle.nn_to_n(handle.chars_max(
         _summary, max=200))  # type: ignore
@@ -85,4 +87,4 @@ async def output(
         + f'{_summary}'
     )
 
-    return out if not msg_id else reply_out(msg_id, out)
+    return reply_out(msg_id, out) if msg_id else out

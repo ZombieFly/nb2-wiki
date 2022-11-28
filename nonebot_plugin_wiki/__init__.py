@@ -1,3 +1,4 @@
+import contextlib
 from typing import Dict, cast
 from .data import MWiki
 from .config import Config
@@ -57,13 +58,9 @@ search = on_command(CMD_START[0], aliases=set(CMD_START[1:]))
 async def _search(
     bot: Bot, event: MessageEvent, state: T_State, keywd=CommandArg()
 ):
-    try:
+    with contextlib.suppress(Exception):
         # 子命令功能在个人会话中禁用，故此处实为个人会话直接调用搜索
         keywd = keywd.extract_plain_text()
-    except Exception:
-        # 通过Cmd子命令调用
-        pass
-
     numb: str = event.message.extract_plain_text()
     msg_id = event.message_id
 
@@ -76,14 +73,12 @@ async def _search(
             logger.debug(f'用户输入的标号是{numb}')
             outstr = await output(
                 title=state['results'][numb],
-                mwiki=(
-                    RAW_MWIKI
-                    if not state.__contains__('mwiki') else
-                    state['mwiki']
-                ),
+                mwiki=state['mwiki'] if state.__contains__(
+                    'mwiki') else RAW_MWIKI,
                 msg_id=msg_id,
                 has_title=True
             )
+
             await search.send(outstr)
         except ValueError:
             # 输入的非数字时的处理
@@ -97,16 +92,8 @@ async def _search(
         # * 会话开启的第一次处理
         try:
             # * 有直接对应的页面
-            outstr = await output(
-                title=keywd,
-                mwiki=(
-                    RAW_MWIKI
-                    if not state.__contains__('mwiki') else
-                    state['mwiki']
-                ),
-                redirect=True,
-                msg_id=msg_id,
-            )
+            outstr = await output(title=keywd, mwiki=state['mwiki'] if state.__contains__('mwiki') else RAW_MWIKI, redirect=True, msg_id=msg_id)
+
             await search.finish(outstr)
         except wiki.exceptions.DisambiguationError as DE:
             # * 没有对应页面，但可生成相似结果列表
@@ -133,9 +120,7 @@ async def _search(
 async def _cmd(
     bot: Bot, event: GroupMessageEvent, state: T_State, keywd=CommandArg()
 ):
-    args = dict()
-    args['group_id'] = event.group_id
-    args['config'] = config
+    args = {'group_id': event.group_id, 'config': config}
 
     try:
         keywd = keywd.extract_plain_text()
@@ -151,7 +136,7 @@ async def _cmd(
         if keywd[0] in get_driver().config.command_start:
             # 解析出子命令与参数
             to_run, *args['fn_args'] = keywd[1:].split()
-            logger.debug(f"[S0]主参数为<{to_run}>，追加参数为<{str(args)}>")
+            logger.debug(f"[S0]主参数为<{to_run}>，追加参数为<{args}>")
             try:
                 # * 尝试执行子命令
                 try:
@@ -167,18 +152,17 @@ async def _cmd(
                     logger.debug(
                         f'[S1]执行普通权限命令触发异常<{repr(err)}>，逻辑为未寻找到普通权限命令"{to_run}"'
                     )
-                    if event.sender.role in ['admin', 'owner']:
-                        # * 管理员及群主会再尝试执行管理员级命令
-                        await cmd.send(
-                            reply_out(
-                                event.message_id,
-                                await getattr(admin, to_run)(args)
-                            )
-                        )
-                        logger.debug(f"[S2]找到并执行了管理员级命令{to_run}")
-                    else:
+                    if event.sender.role not in ['admin', 'owner']:
                         # * 普通成员调用不存在的平级命令或是管理员权限命令
                         raise AttributeError
+                    # * 管理员及群主会再尝试执行管理员级命令
+                    await cmd.send(
+                        reply_out(
+                            event.message_id,
+                            await getattr(admin, to_run)(args)
+                        )
+                    )
+                    logger.debug(f"[S2]找到并执行了管理员级命令{to_run}")
                 except Exception as e:
                     logger.debug(
                         f'[S2M]触发意料外的异常:\n{traceback.format_exc()}')
