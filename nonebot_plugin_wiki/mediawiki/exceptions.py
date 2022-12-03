@@ -98,3 +98,13 @@ class ApiReturnError(WikipediaException):
 
     def __str__(self):
         return repr(self.message)
+
+
+class ApiFormatError(WikipediaException):
+    """api返回非json报错"""
+
+    def __init__(self):
+        self.message = "api返回非json格式，请检查目标 mediawiki api 是否正常工作"
+
+    def __str__(self):
+        return repr(self.message)

@@ -76,7 +76,7 @@ async def output(
     except wiki.DisambiguationError as DE:
         raise DE
     except Exception as e:
-        return reply_out(msg_id, f'发生错误！\n{type(e).__name__}:{e}')
+        return reply_out(msg_id, f'发生错误<{type(e).__name__}>\n{e}')
 
     _summary = handle.nn_to_n(handle.chars_max(
         _summary, max=200))  # type: ignore

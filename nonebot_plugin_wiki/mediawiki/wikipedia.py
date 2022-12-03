@@ -8,7 +8,9 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 import re
 
+from json.decoder import JSONDecodeError
 from .exceptions import (
+    ApiFormatError,
     ApiReturnError,
     NoExtractError,
     PageError,
@@ -842,8 +844,10 @@ async def _wiki_request(params):
     for _ in range(RETRY_TIMES):
         async with httpx.AsyncClient(proxies=PROXIES, timeout=None) as client:
             r = await client.get(API_URL, params=params, headers=headers)
-
-        ret = r.json()
+        try:
+            ret = r.json()
+        except JSONDecodeError:
+            raise ApiFormatError()
         # print(ret)
 
         if 'error' not in ret:
