@@ -75,8 +75,8 @@ async def output(
         return reply_out(msg_id, '目标页面不存在')
     except wiki.DisambiguationError as DE:
         raise DE
-    except wiki.WikipediaException as e:
-        return reply_out(msg_id, f'未知错误：{e}')
+    except Exception as e:
+        return reply_out(msg_id, f'发生错误！\n{type(e).__name__}:{e}')
 
     _summary = handle.nn_to_n(handle.chars_max(
         _summary, max=200))  # type: ignore

@@ -18,6 +18,7 @@ from .exceptions import (
     WikipediaException,
     ODD_ERROR_MESSAGE
 )
+
 from . import util
 
 API_URL = 'https://zh.moegirl.org.cn/api.php'

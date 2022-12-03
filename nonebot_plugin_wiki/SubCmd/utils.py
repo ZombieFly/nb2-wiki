@@ -1,5 +1,5 @@
 from enum import unique, Enum
-from json import JSONDecodeError
+from json.decoder import JSONDecodeError
 from typing import Optional, Union, cast, Dict
 
 from httpx import ConnectError
