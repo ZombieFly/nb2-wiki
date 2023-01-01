@@ -5,7 +5,7 @@
 <a href="./LICENSE">
     <img src="https://img.shields.io/github/license/ZombieFly/nb2-wiki.svg" alt="license">
 </a>
-<a href="https://pypi.python.org/pypi/nonebot-plugin-example">
+<a href="https://pypi.org/project/nonebot-plugin-wiki">
     <img src="https://img.shields.io/pypi/v/nonebot-plugin-wiki.svg" alt="pypi">
 </a>
 <img src="https://img.shields.io/badge/python-3.8+-blue.svg" alt="python">
