@@ -1,5 +1,5 @@
 import contextlib
-from typing import Dict, cast
+from typing import Dict, cast, NoReturn
 from .data import MWiki
 from .config import Config
 from nonebot import get_driver, on_command
@@ -53,6 +53,82 @@ search = on_command(CMD_START[0], aliases=set(CMD_START[1:]))
 
 ###################################################################
 
+async def handle_opt(bot: Bot, state: T_State, numb: str, msg_id: int) -> NoReturn:
+    """条目标号处理
+
+    Args:
+        bot (Bot): Bot实例
+        state (T_State): 会话状态
+        numb (str): 用户输入的标号
+        msg_id (int): 标号消息ID
+
+    Raises:
+        FinishedException: 会话结束
+    """
+
+    # * 撤回搜索结果列表消息
+    await bot.delete_msg(message_id=state['refer_msg_id']['message_id'])
+    try:
+        numb = int(numb)  # type: ignore
+        logger.debug(f'用户输入的标号是{numb}')
+        outstr = await output(
+            title=state['results'][numb],
+            mwiki=state['mwiki'] if state.__contains__(
+                'mwiki') else RAW_MWIKI,
+            msg_id=msg_id,
+            has_title=True
+        )
+
+        await search.send(outstr)
+    except ValueError:
+        # 输入的非数字时的处理
+        await search.send('取消搜索')
+    except IndexError:
+        # 给的数字超出了索引时的处理
+        await search.send(f'{numb}超出了索引')
+    raise FinishedException
+
+
+async def handle_first(state: T_State, keywd: str, msg_id: int) -> NoReturn:
+    """处理第一次搜索
+
+    Args:
+        state (T_State): 会话状态
+        keywd (str): 用户输入的关键词
+        msg_id (int): 消息ID
+
+    Raises:
+        RejectedException: 重开会话，等待用户输入条目标号
+    """
+
+    try:
+        # * 有直接对应的页面
+        outstr = await output(title=keywd, mwiki=state['mwiki'] if state.__contains__('mwiki') else RAW_MWIKI, redirect=True, msg_id=msg_id)
+
+        await search.finish(outstr)
+    except wiki.exceptions.DisambiguationError as DE:
+        # * 没有对应页面，但可生成相似结果列表
+        state['results'] = handle.refer_to_list(raw=DE, max=REFER_MAX)
+        out = (
+            '有关结果如下，输入对应标号发起搜索，回复其他字符自动取消:\n' +
+            '\n'.join(
+                f'[{n}]{state["results"][n]}'
+                for n in range(len(state["results"]))
+            ) +
+            (f'\n(仅展示前{REFER_MAX}个结果)'
+             if (len(state["results"]) > REFER_MAX) else
+             '')
+        )
+        out = reply_out(msg_id=msg_id, output=out)
+        state['refer_msg_id'] = await search.send(out)
+        raise RejectedException from DE
+    except wiki.exceptions.PageError:
+        # * 没有任何相关条目
+        await search.finish(reply_out(output='没有找到任何相关结果', msg_id=msg_id))
+
+
+###################################################################
+
 
 @search.handle()
 async def _search(
@@ -66,54 +142,11 @@ async def _search(
 
     if numb and not keywd:
         # * 用户发送了对应条目的标号后的处理
-        # * 撤回搜索结果列表消息
-        await bot.delete_msg(message_id=state['refer_msg_id']['message_id'])
-        try:
-            numb = int(numb)  # type: ignore
-            logger.debug(f'用户输入的标号是{numb}')
-            outstr = await output(
-                title=state['results'][numb],
-                mwiki=state['mwiki'] if state.__contains__(
-                    'mwiki') else RAW_MWIKI,
-                msg_id=msg_id,
-                has_title=True
-            )
-
-            await search.send(outstr)
-        except ValueError:
-            # 输入的非数字时的处理
-            await search.send('取消搜索')
-        except IndexError:
-            # 给的数大了
-            await search.send(f'{numb}超出了索引')
-        raise FinishedException
+        await handle_opt(bot, state, numb, msg_id)
 
     else:
         # * 会话开启的第一次处理
-        try:
-            # * 有直接对应的页面
-            outstr = await output(title=keywd, mwiki=state['mwiki'] if state.__contains__('mwiki') else RAW_MWIKI, redirect=True, msg_id=msg_id)
-
-            await search.finish(outstr)
-        except wiki.exceptions.DisambiguationError as DE:
-            # * 没有对应页面，但可生成相似结果列表
-            state['results'] = handle.refer_to_list(raw=DE, max=REFER_MAX)
-            out = (
-                '有关结果如下，输入对应标号发起搜索，回复其他字符自动取消:\n' +
-                '\n'.join(
-                    f'[{n}]{state["results"][n]}'
-                    for n in range(len(state["results"]))
-                ) +
-                (f'\n(仅展示前{REFER_MAX}个结果)'
-                    if (len(state["results"]) > REFER_MAX) else
-                    '')
-            )
-            out = reply_out(msg_id=msg_id, output=out)
-            state['refer_msg_id'] = await search.send(out)
-            raise RejectedException
-        except wiki.exceptions.PageError:
-            # * 没有任何相关条目
-            await search.finish(reply_out(output='没有找到任何相关结果', msg_id=msg_id))
+        await handle_first(state, keywd, msg_id)
 
 
 @cmd.handle()
