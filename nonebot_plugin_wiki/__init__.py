@@ -1,29 +1,24 @@
-import contextlib
 from typing import Dict, cast, NoReturn
-from .data import MWiki
-from .config import Config
-from nonebot import get_driver, on_command
-from nonebot.adapters import Bot
-from nonebot.params import CommandArg
-from nonebot.typing import T_State
-from nonebot.adapters.onebot.v11 import (
-    GroupMessageEvent,
-    MessageEvent
-)
-from nonebot.exception import RejectedException, FinishedException
-from nonebot.adapters.onebot.v11.permission import GROUP
-from nonebot.log import logger
-
-
+import contextlib
 import traceback
 
-from . import mediawiki as wiki
+from nonebot.adapters.onebot.v11 import GroupMessageEvent, MessageEvent
+from nonebot.exception import RejectedException, FinishedException
+from nonebot.adapters.onebot.v11.permission import GROUP
+from nonebot import get_driver, on_command
+from nonebot.params import CommandArg
+from nonebot.typing import T_State
+from nonebot.adapters import Bot
+from nonebot.log import logger
 
-
+from .utils import output, reply_out, set_proxies
 from .SubCmd.utils import select_mwiki
 from .SubCmd import admin, member
+from .config import Config
+from .data import MWiki
 from . import handle
-from .utils import output, reply_out, set_proxies
+
+from . import mediawiki as wiki
 
 
 global_config = get_driver().config

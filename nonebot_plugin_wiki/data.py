@@ -4,11 +4,10 @@
 
 """
 
-from pathlib import Path
 from typing import Dict, List, Optional, Union, cast
-
-import yaml
 from pydantic import BaseModel
+from pathlib import Path
+import yaml
 
 
 class MWiki(BaseModel):

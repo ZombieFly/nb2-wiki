@@ -1,5 +1,5 @@
-from typing import Dict, Union
 from pydantic import BaseModel, Extra
+from typing import Dict, Union
 
 from .data import MWiki
 

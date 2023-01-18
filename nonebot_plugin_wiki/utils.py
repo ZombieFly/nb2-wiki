@@ -8,10 +8,8 @@ from nonebot.adapters.onebot.v11 import MessageSegment
 from nonebot.adapters import Message
 
 from .mediawiki import wikipedia as wiki
-
 from .SubCmd.utils import set_wiki
 from .data import MWiki
-
 from . import handle
 
 global PROXIES
