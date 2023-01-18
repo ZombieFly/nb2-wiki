@@ -13,3 +13,6 @@ nonebot-plugin-wiki/config.py
 .vscode
 package.sh
 pre-package.sh
+
+### script ###
+script.sh
