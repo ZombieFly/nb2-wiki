@@ -122,6 +122,84 @@ async def handle_first(state: T_State, keywd: str, msg_id: int) -> NoReturn:
         await search.finish(reply_out(output='没有找到任何相关结果', msg_id=msg_id))
 
 
+async def search_from_another_wiki(
+    bot: Bot,
+    event: GroupMessageEvent,
+    state: T_State,
+    args: dict,
+    wiki_name: str
+):
+    """从已记录的wiki中寻找对应的wiki搜索
+
+    Args:
+        bot (Bot): Bot实例
+        event (GroupMessageEvent): 群聊事件
+        state (T_State)
+        args (dict): 传入的参数
+        wiki_name (str): wiki名称
+    """
+    state['mwiki'] = await select_mwiki(
+        wiki_name, args['group_id']
+    )
+    if state['mwiki']:
+        try:
+            logger.debug(
+                f'[S4]已记录wiki"{state["mwiki"].name}"被找到，尝试开始调用搜索，'
+                + f'搜索关键词为<{" ".join(args["fn_args"])}>'
+            )
+            await _search(bot, event, state, " ".join(args["fn_args"]))
+        except IndexError:
+            logger.debug(
+                f'[S5]已记录wiki"{state["mwiki"].name}"被找到，但不存在关键词')
+    else:
+        await cmd.finish(
+            reply_out(
+                event.message_id,
+                '不存在的命令或是已记录wiki，请检查是否具有对应权限或者输入是否正确'
+            )
+        )
+
+
+async def run_cmd(event: GroupMessageEvent, args: dict, cmd_name: str):
+    """执行子命令
+
+    Args:
+        event (GroupMessageEvent)
+        args (dict): 传入的参数
+        cmd_name (str): 子命令名称
+
+    Raises:
+        AttributeError: _description_
+    """
+    try:
+        # * 优先尝试普通权限命令
+        await cmd.send(
+            reply_out(
+                event.message_id,
+                await getattr(member, cmd_name)(args)
+            )
+        )
+        logger.debug(f"[S1M]找到并执行了普通权限命令{cmd_name}")
+    except AttributeError as err:
+        logger.debug(
+            f'[S1]执行普通权限命令触发异常<{repr(err)}>，逻辑为未寻找到普通权限命令"{cmd_name}"'
+        )
+        if event.sender.role not in ['admin', 'owner']:
+            # * 普通成员调用不存在的平级命令或是管理员权限命令
+            raise AttributeError from err
+            # * 管理员及群主会再尝试执行管理员级命令
+        await cmd.send(
+            reply_out(
+                event.message_id,
+                await getattr(admin, cmd_name)(args)
+            )
+        )
+        logger.debug(f"[S2]找到并执行了管理员级命令{cmd_name}")
+    except Exception as e:
+        logger.debug(
+            f'[S2M]触发意料外的异常:\n{traceback.format_exc()}')
+        await cmd.finish(reply_out(event.message_id, f'发生异常：\n{repr(e)}'))
+
 ###################################################################
 
 
@@ -158,8 +236,7 @@ async def _cmd(
 
         if not keywd:
             # TODO 接入帮助
-            logger.debug("无参数追加，结束事件")
-            return
+            logger.debug("无参数追加，不进行处理")
 
         if keywd[0] in get_driver().config.command_start:
             # 解析出子命令与参数
@@ -167,58 +244,10 @@ async def _cmd(
             logger.debug(f"[S0]主参数为<{to_run}>，追加参数为<{args}>")
             try:
                 # * 尝试执行子命令
-                try:
-                    # * 优先尝试普通权限命令
-                    await cmd.send(
-                        reply_out(
-                            event.message_id,
-                            await getattr(member, to_run)(args)
-                        )
-                    )
-                    logger.debug(f"[S1M]找到并执行了普通权限命令{to_run}")
-                except AttributeError as err:
-                    logger.debug(
-                        f'[S1]执行普通权限命令触发异常<{repr(err)}>，逻辑为未寻找到普通权限命令"{to_run}"'
-                    )
-                    if event.sender.role not in ['admin', 'owner']:
-                        # * 普通成员调用不存在的平级命令或是管理员权限命令
-                        raise AttributeError
-                    # * 管理员及群主会再尝试执行管理员级命令
-                    await cmd.send(
-                        reply_out(
-                            event.message_id,
-                            await getattr(admin, to_run)(args)
-                        )
-                    )
-                    logger.debug(f"[S2]找到并执行了管理员级命令{to_run}")
-                except Exception as e:
-                    logger.debug(
-                        f'[S2M]触发意料外的异常:\n{traceback.format_exc()}')
-                    await cmd.finish(reply_out(event.message_id, f'发生异常：\n{repr(e)}'))
+                await run_cmd(event, args, to_run)
             except AttributeError:
                 logger.debug(f'[S3]子命令"{to_run}"未找到，尝试从已记录wiki中寻找')
-                # * 不存在对应子命令时，调用seletc_wiki函数，获取可能的对应的wiki配置
-                # 传入MWiki类
-                state['mwiki'] = await select_mwiki(
-                    to_run, args['group_id']
-                )
-                if state['mwiki']:
-                    try:
-                        logger.debug(
-                            f'[S4]已记录wiki"{state["mwiki"].name}"被找到，尝试开始调用搜索，'
-                            + f'搜索关键词为<{" ".join(args["fn_args"])}>'
-                        )
-                        await _search(bot, event, state, " ".join(args["fn_args"]))
-                    except IndexError:
-                        logger.debug(
-                            f'[S5]已记录wiki"{state["mwiki"].name}"被找到，但不存在关键词')
-                else:
-                    await cmd.finish(
-                        reply_out(
-                            event.message_id,
-                            '不存在的命令或是已记录wiki，请检查是否具有对应权限或者输入是否正确'
-                        )
-                    )
+                await search_from_another_wiki(bot, event, state, args, to_run)
             except Exception as e:
                 logger.debug(f'[S6]触发意料外的异常:\n{traceback.format_exc()}')
                 await cmd.finish(reply_out(event.message_id, f'发生异常：\n{repr(e)}'))
