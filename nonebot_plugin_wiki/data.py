@@ -41,8 +41,6 @@ class Data:
 
     def get_wiki_list(self, group_id: int) -> Union[WikiList, List[MWiki]]:
         wiki_list = self.__wiki_list
-        if not group_id:
-            return wiki_list
         if group_id not in wiki_list["group"]:
             wiki_list["group"][group_id] = []
         return wiki_list["group"][group_id]
