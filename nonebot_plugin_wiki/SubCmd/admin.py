@@ -5,8 +5,8 @@ from typing import cast
 from json import dumps
 
 from .utils import Status, args2mwiki, check_wiki, get_mwiki
+from . import member, admin, env
 from ..data import Data, MWiki
-from . import admin, member
 
 
 async def lsl(args: dict):
@@ -16,7 +16,7 @@ async def lsl(args: dict):
     return mwiki if type(mwiki) is str else dumps(cast(MWiki, mwiki).dict())
 
 
-async def add(args: dict) -> str:  # sourcery skip: collection-into-set
+async def add(args: dict) -> str:
     """#增加记录
 
     Args:
@@ -26,13 +26,13 @@ async def add(args: dict) -> str:  # sourcery skip: collection-into-set
         str: 执行结果
     """
     # * 阻止注册类属性作为名称
-    if args['fn_args'][0] in dir(admin) + dir(member):
+    if args['fn_args'][0] in dir(admin) + dir(member) + dir(env):
         return f'不被允许注册保留关键字<{args["fn_args"][0]}>作为名称'
     # * 阻止使用已注册的名称
     if Data().has_wiki(args['fn_args'][0], args['group_id']):
         return '该名称已被注册'
     # * 阻止参数缺省
-    if len(args['fn_args']) in (0, 1):
+    if len(args['fn_args']) in {0, 1}:
         return '参数缺省，请重新输入'
 
     try:
