@@ -1,11 +1,9 @@
-from enum import unique, Enum
-from json.decoder import JSONDecodeError
 from typing import Optional, Union, cast, Dict
-
+from json.decoder import JSONDecodeError
 from httpx import ConnectError
+from enum import unique, Enum
 
 from ..mediawiki.exceptions import ApiReturnError, NoExtractError
-
 from .. import mediawiki as Wiki
 from ..data import Data, MWiki
 

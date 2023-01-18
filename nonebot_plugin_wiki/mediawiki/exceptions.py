@@ -41,6 +41,9 @@ class PageError(WikipediaException):
         else:
             return u"Page id \"{0}\" does not match any pages. Try another id!".format(self.pageid)
 
+    def __str__(self):
+        return "目标页面不存在"
+
 
 class DisambiguationError(WikipediaException):
     """
@@ -84,10 +87,10 @@ class NoExtractError(WikipediaException):
     """当响应的内容中不含'extract'键时抛出的异常"""
 
     def __init__(self):
-        self.message = '响应内容中不含”extract“键'
+        self.message = '响应内容中不含”extract“键,请确定api是否返回摘要'
 
     def __str__(self):
-        return repr(self.message)
+        return self.message
 
 
 class ApiReturnError(WikipediaException):
@@ -97,7 +100,7 @@ class ApiReturnError(WikipediaException):
         self.message = f"在连续尝试{times}次请求后，api方面仍返回错误"
 
     def __str__(self):
-        return repr(self.message)
+        return self.message
 
 
 class ApiFormatError(WikipediaException):
@@ -107,4 +110,4 @@ class ApiFormatError(WikipediaException):
         self.message = "api返回非json格式，请检查目标 mediawiki api 是否正常工作"
 
     def __str__(self):
-        return repr(self.message)
+        return self.message

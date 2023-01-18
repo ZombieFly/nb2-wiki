@@ -7,11 +7,9 @@ from typing import Union
 from nonebot.adapters.onebot.v11 import MessageSegment
 from nonebot.adapters import Message
 
-from .SubCmd.utils import set_wiki
 from .mediawiki import wikipedia as wiki
+from .SubCmd.utils import set_wiki
 from .data import MWiki
-from .mediawiki.exceptions import NoExtractError
-
 from . import handle
 
 global PROXIES
@@ -67,16 +65,10 @@ async def output(
             title, auto_suggest=auto_suggest, redirect=redirect
         )
 
-    except NoExtractError:
-        return reply_out(msg_id, '目标wiki不支持生成简介')
-    except wiki.ApiReturnError:
-        return reply_out(msg_id, 'api多次返回异常，请检查api状态或稍后重试')
-    except wiki.PageError:
-        return reply_out(msg_id, '目标页面不存在')
     except wiki.DisambiguationError as DE:
         raise DE
     except Exception as e:
-        return reply_out(msg_id, f'发生错误<{type(e).__name__}>\n{e}')
+        return reply_out(msg_id, str(e)) if msg_id else str(e)
 
     _summary = handle.nn_to_n(handle.chars_max(
         _summary, max=200))  # type: ignore

@@ -1,8 +1,8 @@
 """管理员权限命令
 """
 
-from json import dumps
 from typing import cast
+from json import dumps
 
 from .utils import Status, args2mwiki, check_wiki, get_mwiki
 from ..data import Data, MWiki
