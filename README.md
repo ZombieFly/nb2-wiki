@@ -25,6 +25,9 @@
 
 - 该项目目前仍未发布正式版，可能并不适合立即投入生产环境，请务必于测试环境中进行调试后再投入生产环境。
 
+## 关于贡献者
+此仓库原Fork自仓库 [wikipedia](https://github.com/goldsmith/Wikipedia)，但因为当初并不熟练使用git，直接在原仓库中进行了修改，制作了本插件，最后导致原仓库的贡献者也出现在了本仓库内，如果对你产生了误导，望见谅。[wikipedia](https://github.com/goldsmith/Wikipedia) 仓库的贡献者们提供了开放的优质项目，也在此表示鸣谢。你也可以[在此](https://github.com/ZombieFly/nb2-wiki/graphs/contributors)本项目实际贡献者，同时，如果你有较好的移除显示原始贡献者的方法，欢迎致邮赐教。
+
 ## 安装
 
 ### 通过 nb-cli 安装（推荐）
