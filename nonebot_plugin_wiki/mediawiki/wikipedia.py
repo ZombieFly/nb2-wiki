@@ -23,7 +23,7 @@ from .exceptions import (
 
 from . import util
 
-API_URL = 'https://zh.moegirl.org.cn/api.php'
+API_URL = 'https://minecraft.fandom.com/zh/api.php'
 CURID_URL = 'https://minecraft.fandom.com/zh/index.php?curid='
 PROXIES = {}
 RATE_LIMIT = False
